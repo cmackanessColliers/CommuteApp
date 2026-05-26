@@ -29,7 +29,7 @@ export default defineConfig({
     ],
   },
   build: {
-    outDir: "SubmarketUpdateApp",
+    outDir: "CommuteApp",
     chunkSizeWarningLimit: 2000,
     rollupOptions: {
       output: {
@@ -63,5 +63,5 @@ export default defineConfig({
     sourcemap: false,
     target: "es2022",
   },
-  base: "/portal/apps/SubmarketUpdateApp/",
+  base: "/portal/apps/CommuteApp/",
 });

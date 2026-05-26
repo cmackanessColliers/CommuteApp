@@ -1,4 +1,4 @@
-import { useSiteSelection } from "../contexts/SiteSelectionContext";
+import useAppStateStore from "../stores/AppStateStore";
 import "@arcgis/map-components/components/arcgis-map";
 import "@arcgis/map-components/components/arcgis-expand";
 import "@arcgis/map-components/components/arcgis-legend";
@@ -10,7 +10,7 @@ import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter.js";
 import Query from "@arcgis/core/rest/support/Query.js";
 import { useState, useEffect, useRef } from "react";
 const MapComponent = () => {
-  const {} = useSiteSelection()
+  const {} = useAppStateStore()
   const mapRef = useRef(null)
   const [filter, setFilter] = useState("1=1")
   const [map, setMap] = useState(null);

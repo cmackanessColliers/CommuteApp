@@ -1,17 +1,17 @@
 import { useEffect } from "react";
 import PropTypes from "prop-types";
 
-import { useUserAuthorization } from "../contexts/UserAuthorizationContext";
+import useAuthorizationStore from "../stores/UserAuthorizationStore";
 
 function ProtectedRoute({ children }) {
-  const { isAuthorized, atlasLogin } = useUserAuthorization();
+  const { isAuthorized, authorizeUser } = useAuthorizationStore();
 
   useEffect(() => {
     async function runLogin() {
-      return await atlasLogin();
+      return await authorizeUser();
     }
     runLogin();
-  }, [atlasLogin]);
+  }, [authorizeUser]);
 
   return isAuthorized ? children : null;
 }

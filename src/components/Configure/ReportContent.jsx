@@ -18,11 +18,12 @@ import {
 function ReportContent() {
 
   return (
-      <CalcitePanel>
-          <div style={{height:"100%", width:"100%"}}>
-            It is working
-          </div>
-      </CalcitePanel>
+    <CalcitePanel>
+        <div style={{height:"100%", width:"100%", backgroundColor: "#000759"}}>
+          <h1 style={{color: "white"}}>It is working</h1>
+          
+        </div>
+    </CalcitePanel>
   );
 };
 

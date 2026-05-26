@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
 
 // Configure portal and app URLs based on environment
 const LOCAL_PORT = 5174;
-const LOCAL_BASE_PATH = "/portal/apps/reportReader";
+const LOCAL_BASE_PATH = "/portal/apps/AppStateStore";
 const isLocalDev = window.location.hostname === "localhost";
 
 // Configure ESRI authentication settings
