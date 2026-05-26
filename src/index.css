@@ -1,0 +1,307 @@
+/* @import "https://js.arcgis.com/calcite-components/3.3.0/calcite.css"; */
+/* @import "https://js.arcgis.com/4.34/@arcgis/core/assets/esri/themes/light/main.css";
+@import "https://js.arcgis.com/4.34/map-components/main.css";
+@import "https://js.arcgis.com/4.34/scene-components/main.css";
+@import "https://js.arcgis.com/4.34/chart-components/main.css"; */
+
+*, #root,
+html,
+body,
+      :root {
+        font-family: 'Open Sans';
+        --optimal-shadow:  0 1px 1px hsl(0deg 0% 0% / 0.075),
+          0 2px 2px hsl(0deg 0% 0% / 0.075),
+          0 4px 4px hsl(0deg 0% 0% / 0.075),
+          0 8px 8px hsl(0deg 0% 0% / 0.075),
+          0 16px 16px hsl(0deg 0% 0% / 0.075)
+        ;
+        /* Matches windoes 8px border radius */
+        --root-border-radius: 8px; 
+
+        /* Calcite Base styles */
+        --calcite-color-brand:#25408F !important;
+        --calcite-color-brand-hover: #000759;
+        --calcite-color-brand-press: #353E59;
+        --calcite-color-background: #FFFFFF;
+        --calcite-color-foreground-1:  #fcfcfc;
+        --calcite-color-foreground-2:  #f7f7f7;
+        --calcite-color-foreground-3:  #f1f1f1f1;
+        --calcite-color-info: #1C54F4;
+        --calcite-color-success: #308e29;
+        --calcite-color-warning: #f1c21b;
+        --calcite-color-danger: #d83020;
+        --calcite-color-danger-hover: #a82b1e;
+        --calcite-color-danger-press: #851012;
+        --calcite-color-text-1: #000759;
+        --calcite-color-text-2: #000759;
+        --calcite-color-text-3: #000759;
+        --calcite-color-text-inverse: #ffffff;
+        --calcite-color-text-link: #25408F;
+        --calcite-color-border-1: #e6ddd1;
+        --calcite-color-border-2: #e8e1dc;
+        --calcite-color-border-3: #e6ddd1;
+        --calcite-color-border-input: #a1a19e;
+
+        /* Action Bar styles */
+        --calcite-action-bar-background-color:  #ffffff;
+        --calcite-action-background-color: #ffffff;
+        --calcite-action-indicator-color:  #4D93FF;
+        --calcite-action-background-color-press: #f7f7f7;
+
+        /* Panel Styles */
+        --calcite-panel-header-background-color: #ffffff;
+        --calcite-panel-background-color: #f7f7f7;
+        --calcite-shell-panel-width: auto;
+        --calcite-shell-panel-min-width: 20vw;
+        --calcite-shell-panel-max-width: 45vw;
+
+        /* Table Styles */
+        --calcite-table-corner-radius: var(--root-border-radius);
+        --calcite-table-shadow:var(--optimal-shadow);
+        /* --calcite-table-header-heading-text-color: #000759;
+        --calcite-table-header-background: #DBE5FF;
+        --calcite-table-header-border-color: #000579;
+        --calcite-table-row-border-color: #000759; */
+
+        /* Card Styles */
+        --calcite-card-background-color: #ffffff;
+        --calcite-card-corner-radius:var(--root-border-radius);
+        --calcite-card-shadow: var(--optimal-shadow);
+
+        /* List Styles */
+        --calcite-list-background-color: #FFFFFF;
+
+        /* Block Styles */
+        --calcite-block-header-background-color: #FFFFFF;
+
+        /* Popover Styles */
+        --calcite-popover-background-color: #FFFFFF;
+
+        /* Slider Styles */
+        --calcite-slider-track-color: #ACBBE8;
+        --calcite-slider-track-fill-color: #25408F;
+        --calcite-slider-tick-color:  #ACBBE8;
+        --calcite-slider-tick-selected-color: #25408F;
+
+        /* Segemented Control Styles */
+        --calcite-segmented-control-border-color: #ACBBE8;
+
+        /* Combobox styles */
+        --calcite-combobox-icon-color:#7B8BBD;
+        --calcite-combobox-icon-color-hover: #353E59;
+        --calcite-combobox-input-border-color: #7B8BBD;
+        --calcite-button-corner-radius: var(--root-border-radius);
+
+        /* Chip Styles */
+        --calcite-chip-corner-radius: var(--root-border-radius);
+      }
+      body {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        font-family: 'Open Sans';
+      }
+
+      table{ 
+        border-collapse: collapse;
+      }
+
+      .summaryStatsTableBody td {
+        border-collapse: collapse;
+        border-bottom: 1px solid #000759;
+        background-color: white;
+        color:#000759;
+        padding: 1px;
+        text-align: center;
+      }
+      .summaryStatsContainer {
+        opacity: 0;
+        transform: translate(-300px,0);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .marketSumHistoricComparison {
+        opacity: 0;
+        transform: translate(300px,0);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .marketSumGraphContainer {
+        opacity: 0;
+        transform: translate(0,300px);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .mapContainer {
+        opacity: 1;
+      }
+
+      .subMarketRow {
+        opacity: 0;
+        transform: translate(-300px,0);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .summarySubStatsContainer {
+        opacity: 0;
+        transform: translate(300px,0);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .marketImage {
+        opacity: 0;
+        transform: translate(-300px,0);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .backCoverColliersLogo {
+        opacity: 0;
+        transform: translate(300px, 0);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .StatsBlock {
+        opacity: 0;
+        transform: translate(0, 300px);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .Disclaimers {
+        opacity: 0;
+        transform: translate(0, 300px);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .vacancyGraphContainer {
+        opacity: 0;
+        transform: translate(0,300px);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .subMarketGraphContainer {
+        opacity: 0;
+        transform: translate(0,300px);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .countryDisclaimer {
+        opacity: 0;
+        transform: translate(0,300px);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .pageDivider {
+        opacity: 0;
+        transform: translate(0,300px);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .MarketContacts {
+        opacity: 0;
+        transform: translate(0,300px);
+        transition: all 0.5s ease-out;
+        transition-delay: 0.2s;
+      }
+
+      .animate {
+        opacity: 1;
+        transform: translate(0, 0);
+      }
+
+      .subMarketRow td,
+      .subMarketRow th {
+        opacity: 0;
+        transform: translate(-300px,0);
+      }
+
+      .subMarketRow.animate td,
+      .subMarketRow.animate th {
+        opacity: 1;
+        transform: translate(0, 0);        
+        transition: border-bottom .5s ease-in-out 0.5s, transform 0.5s ease-out; 
+        border-bottom: 1px solid #000759;
+      }
+
+      @keyframes cellIn {
+        from {
+          opacity: 0;
+        transform: translate(-300px,0);
+        }
+        to {
+          opacity: 1;
+          transform: translate(0, 0);
+        }
+      }
+      .headerText {
+        height: 5vh;
+        font-size: 1.35vh;
+        text-align: center;
+        padding-inline: 8px;
+        outline: .5px solid #CCCDD5;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), -1px -1px 2px rgba(255, 255, 255, 0.8) inset;
+      }
+      
+      .tableDiv {
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), -1px -1px 2px rgba(255, 255, 255, 0.8) inset;
+      }
+
+      .marketDataTableText {
+        font-size: 12px;
+        text-align: center;
+        padding: 5px;
+        /* border-bottom: 1px solid #000759; */
+      }
+      .marketDataTableTotal {
+        font-size: 12px;
+        text-align: center;
+        padding: 5px;
+        font-weight: bold;
+        color: #353E59;
+        /* border-bottom: 1px solid #000759; */
+      }
+
+      .tableDownloadButton {
+        position:absolute;
+        left:0.2in;
+        top:0.85in;
+        height:.25in;
+        width:1.8in;
+        background-color:#000759;
+        color:white;
+        border-radius:10px;
+      }
+
+      .tableDownloadButton:hover {
+        background-color: #1C54F4;
+        cursor: pointer;
+      }
+
+      .downloadButton {
+        height:.25in;
+        width:1.8in;
+        background-color:#25408F;
+        color:white;
+        border-radius:10px;
+      }
+
+      .downloadButton:hover {
+        background-color: #1C54F4;
+        cursor: pointer;
+      }
+
+      .tableBody:nth-child(even) {background-color: #FFFFFF;}
+      .tableBody:nth-child(odd) {background-color: #DBE5FF;}

@@ -1,0 +1,75 @@
+{
+  "name": "submarket-update-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 5174",
+    "setup:certs": "node scripts/generate-certs.cjs"
+  },
+  "dependencies": {
+    "@ag-media/react-pdf-table": "^2.0.3",
+    "@arcgis/charts-components": "^4.34.8",
+    "@arcgis/core": "~4.34.6",
+    "@arcgis/map-components": "^4.34.8",
+    "@esri/calcite-components": "^3.3.0",
+    "@esri/calcite-components-react": "^3.3.0",
+    "@fontsource/open-sans": "^5.2.7",
+    "@react-pdf/renderer": "^4.3.2",
+    "animejs": "^4.2.2",
+    "chart.js": "^4.5.0",
+    "d3": "^7.9.0",
+    "dexie": "^4.2.1",
+    "export-to-csv": "^1.4.0",
+    "h3-js": "^4.3.0",
+    "material-react-table": "^3.2.1",
+    "papaparse": "^5.5.3",
+    "prop-types": "^15.8.1",
+    "react": "^19.1.0",
+    "react-chartjs-2": "^5.3.1",
+    "react-csv-downloader": "^3.3.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.9.5",
+    "traveltime-api": "^7.1.1",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-basic-ssl": "^2.1.0",
+    "@vitejs/plugin-react-swc": "^4.2.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "rollup-plugin-visualizer": "^6.0.5",
+    "terser": "^5.44.0",
+    "vite": "^7.1.12"
+  },
+  "browserslist": {
+    "production": [
+      "last 4 chrome versions",
+      "last 4 edge versions",
+      "last 2 firefox versions",
+      "last 2 safari versions"
+    ],
+    "development": [
+      "last 4 chrome versions",
+      "last 4 edge versions",
+      "last 2 firefox versions",
+      "last 2 safari versions"
+    ]
+  },
+  "version": "1.0.0",
+  "description": "📁 **[Click here to download this directory as a ZIP file](https://esri.github.io/jsapi-resources/zips/map-component-sample-react.zip)** 📁",
+  "main": "vite.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cmackanessColliers/map-component-sample-react.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cmackanessColliers/map-component-sample-react/issues"
+  },
+  "homepage": "https://github.com/cmackanessColliers/map-component-sample-react#readme"
+}

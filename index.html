@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- <link rel="shortcut icon" type="app-icon" href="src/images/VeloIcon.png" /> -->
+    <link rel="shortcut icon" type="app-icon" href="src/images/Designer.png" />
+    <!-- CSS is imported from `src/main.jsx` so we don't include a root-absolute stylesheet link here -->
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Colliers Submarket Update App</title>
+    <!-- Load Calcite components from CDN -->
+    <script
+      type="module"
+      src="https://js.arcgis.com/calcite-components/3.3.3/calcite.esm.js"
+    ></script>
+  </head>
+
+  <body>
+    <div id="root" class="calcite-mode-light"></div>
+    <!-- Use relative path so Vite rewrites correctly when building with `base` configured in vite.config.js -->
+    <script type="module" src="src/main.jsx"></script>
+  </body>
+</html>
