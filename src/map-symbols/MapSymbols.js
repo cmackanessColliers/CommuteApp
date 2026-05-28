@@ -1,3 +1,7 @@
+import CIMSymbol from "@arcgis/core/symbols/CIMSymbol.js";
+import UniqueValueRenderer from "@arcgis/core/renderers/UniqueValueRenderer.js";
+import SimpleRenderer from "@arcgis/core/renderers/SimpleRenderer";
+
 const siteSymbol = {
   type: "CIMPointSymbol",
   symbolLayers: [
@@ -935,4 +939,472 @@ const outboundSymbol = {
   animations: [],
 };
 
-export { siteSymbol, employeeSymbol, inboundSymbol, outboundSymbol };
+const defaultRouteSymbol = {
+  type: "CIMLineSymbol",
+  symbolLayers: [
+    {
+      type: "CIMSolidStroke",
+      effects: [
+        {
+          type: "CIMGeometricEffectOffset",
+          method: "Bevelled",
+          offset: 2,
+          option: "Fast",
+        },
+        {
+          type: "CIMGeometricEffectDashes",
+          lineDashEnding: "NoConstraint",
+          controlPointEnding: "NoConstraint",
+        },
+      ],
+      enable: true,
+      colorLocked: true,
+      capStyle: "Square",
+      joinStyle: "Miter",
+      lineStyle3D: "Strip",
+      miterLimit: 10,
+      width: 2,
+      color: [232, 190, 255, 255],
+    },
+    {
+      type: "CIMSolidStroke",
+      effects: [
+        {
+          type: "CIMGeometricEffectOffset",
+          method: "Mitered",
+          offset: -2,
+          option: "Fast",
+        },
+        {
+          type: "CIMGeometricEffectDashes",
+          lineDashEnding: "NoConstraint",
+          controlPointEnding: "NoConstraint",
+        },
+      ],
+      enable: true,
+      colorLocked: true,
+      capStyle: "Square",
+      joinStyle: "Miter",
+      lineStyle3D: "Strip",
+      miterLimit: 10,
+      width: 2,
+      color: [223, 115, 255, 255],
+    },
+  ],
+  animations: [],
+};
+
+const inboundRouteSymbol = {
+  type: "CIMLineSymbol",
+  symbolLayers: [
+    {
+      type: "CIMVectorMarker",
+      enable: false,
+      anchorPointUnits: "Relative",
+      dominantSizeAxis3D: "Y",
+      size: 8,
+      billboardMode3D: "FaceNearPlane",
+      frame: {
+        xmin: 0,
+        ymin: 0,
+        xmax: 17,
+        ymax: 17,
+      },
+      markerGraphics: [
+        {
+          type: "CIMMarkerGraphic",
+          geometry: {
+            rings: [
+              [
+                [0, 0.65],
+                [8.5, 16.35],
+                [17, 0.65],
+                [0, 0.65],
+              ],
+            ],
+          },
+          symbol: {
+            type: "CIMPolygonSymbol",
+            symbolLayers: [
+              {
+                type: "CIMSolidStroke",
+                enable: true,
+                capStyle: "Round",
+                joinStyle: "Round",
+                lineStyle3D: "Strip",
+                miterLimit: 10,
+                width: 0,
+                color: [0, 0, 0, 255],
+              },
+              {
+                type: "CIMSolidFill",
+                enable: true,
+                color: [28, 84, 244, 255],
+              },
+            ],
+          },
+        },
+      ],
+      scaleSymbolsProportionally: true,
+      respectFrame: true,
+      color: [0, 7, 89, 255],
+      markerPlacement: {
+        type: "CIMMarkerPlacementAlongLineSameSize",
+        angleToLine: true,
+        offset: -3,
+        controlPointsPlacement: "NoConstraint",
+        customEndingOffset: 0,
+        endings: "WithHalfGap",
+        offsetAlongLine: 0,
+        placementTemplate: [100],
+      },
+      rotation: 90,
+      offsetY: 0,
+      rotateClockwise: true,
+    },
+    {
+      type: "CIMVectorMarker",
+      enable: true,
+      anchorPointUnits: "Relative",
+      dominantSizeAxis3D: "Y",
+      size: 8,
+      billboardMode3D: "FaceNearPlane",
+      frame: {
+        xmin: 0,
+        ymin: 0,
+        xmax: 17,
+        ymax: 17,
+      },
+      markerGraphics: [
+        {
+          type: "CIMMarkerGraphic",
+          geometry: {
+            rings: [
+              [
+                [0, 0.65],
+                [8.5, 16.35],
+                [17, 0.65],
+                [0, 0.65],
+              ],
+            ],
+          },
+          symbol: {
+            type: "CIMPolygonSymbol",
+            symbolLayers: [
+              {
+                type: "CIMSolidStroke",
+                enable: true,
+                capStyle: "Round",
+                joinStyle: "Round",
+                lineStyle3D: "Strip",
+                miterLimit: 10,
+                width: 0,
+                color: [0, 0, 0, 255],
+              },
+              {
+                type: "CIMSolidFill",
+                enable: true,
+                color: [0, 7, 89, 255],
+              },
+            ],
+          },
+        },
+      ],
+      scaleSymbolsProportionally: true,
+      respectFrame: true,
+      color: [0, 7, 89, 255],
+      markerPlacement: {
+        type: "CIMMarkerPlacementAlongLineSameSize",
+        angleToLine: true,
+        offset: 3,
+        controlPointsPlacement: "WithHalfGap",
+        customEndingOffset: 0,
+        endings: "WithMarkers",
+        offsetAlongLine: 0,
+        placementTemplate: [100],
+      },
+      rotation: 90,
+      offsetY: 0,
+      rotateClockwise: false,
+    },
+    {
+      type: "CIMSolidStroke",
+      effects: [
+        {
+          type: "CIMGeometricEffectOffset",
+          method: "Bevelled",
+          offset: 3,
+          option: "Fast",
+        },
+        {
+          type: "CIMGeometricEffectDashes",
+          lineDashEnding: "NoConstraint",
+          controlPointEnding: "NoConstraint",
+        },
+      ],
+      enable: true,
+      colorLocked: true,
+      capStyle: "Square",
+      joinStyle: "Miter",
+      lineStyle3D: "Strip",
+      miterLimit: 10,
+      width: 2,
+      color: [0, 7, 89, 255],
+    },
+    {
+      type: "CIMSolidStroke",
+      effects: [
+        {
+          type: "CIMGeometricEffectOffset",
+          method: "Mitered",
+          offset: -3,
+          option: "Fast",
+        },
+        {
+          type: "CIMGeometricEffectDashes",
+          lineDashEnding: "NoConstraint",
+          controlPointEnding: "NoConstraint",
+        },
+      ],
+      enable: false,
+      colorLocked: true,
+      capStyle: "Square",
+      joinStyle: "Miter",
+      lineStyle3D: "Strip",
+      miterLimit: 10,
+      width: 2,
+      color: [28, 84, 244, 255],
+    },
+  ],
+  animations: [],
+};
+
+const outboundRouteSymbol = {
+  type: "CIMLineSymbol",
+  symbolLayers: [
+    {
+      type: "CIMVectorMarker",
+      enable: true,
+      anchorPointUnits: "Relative",
+      dominantSizeAxis3D: "Y",
+      size: 8,
+      billboardMode3D: "FaceNearPlane",
+      frame: {
+        xmin: 0,
+        ymin: 0,
+        xmax: 17,
+        ymax: 17,
+      },
+      markerGraphics: [
+        {
+          type: "CIMMarkerGraphic",
+          geometry: {
+            rings: [
+              [
+                [0, 0.65],
+                [8.5, 16.35],
+                [17, 0.65],
+                [0, 0.65],
+              ],
+            ],
+          },
+          symbol: {
+            type: "CIMPolygonSymbol",
+            symbolLayers: [
+              {
+                type: "CIMSolidStroke",
+                enable: true,
+                capStyle: "Round",
+                joinStyle: "Round",
+                lineStyle3D: "Strip",
+                miterLimit: 10,
+                width: 0,
+                color: [0, 0, 0, 255],
+              },
+              {
+                type: "CIMSolidFill",
+                enable: true,
+                color: [28, 84, 244, 255],
+              },
+            ],
+          },
+        },
+      ],
+      scaleSymbolsProportionally: true,
+      respectFrame: true,
+      color: [0, 7, 89, 255],
+      markerPlacement: {
+        type: "CIMMarkerPlacementAlongLineSameSize",
+        angleToLine: true,
+        offset: -3,
+        controlPointsPlacement: "NoConstraint",
+        customEndingOffset: 0,
+        endings: "WithHalfGap",
+        offsetAlongLine: 0,
+        placementTemplate: [100],
+      },
+      rotation: 90,
+      offsetY: 0,
+      rotateClockwise: true,
+    },
+    {
+      type: "CIMVectorMarker",
+      enable: false,
+      anchorPointUnits: "Relative",
+      dominantSizeAxis3D: "Y",
+      size: 8,
+      billboardMode3D: "FaceNearPlane",
+      frame: {
+        xmin: 0,
+        ymin: 0,
+        xmax: 17,
+        ymax: 17,
+      },
+      markerGraphics: [
+        {
+          type: "CIMMarkerGraphic",
+          geometry: {
+            rings: [
+              [
+                [0, 0.65],
+                [8.5, 16.35],
+                [17, 0.65],
+                [0, 0.65],
+              ],
+            ],
+          },
+          symbol: {
+            type: "CIMPolygonSymbol",
+            symbolLayers: [
+              {
+                type: "CIMSolidStroke",
+                enable: true,
+                capStyle: "Round",
+                joinStyle: "Round",
+                lineStyle3D: "Strip",
+                miterLimit: 10,
+                width: 0,
+                color: [0, 0, 0, 255],
+              },
+              {
+                type: "CIMSolidFill",
+                enable: true,
+                color: [0, 7, 89, 255],
+              },
+            ],
+          },
+        },
+      ],
+      scaleSymbolsProportionally: true,
+      respectFrame: true,
+      color: [0, 7, 89, 255],
+      markerPlacement: {
+        type: "CIMMarkerPlacementAlongLineSameSize",
+        angleToLine: true,
+        offset: 3,
+        controlPointsPlacement: "WithHalfGap",
+        customEndingOffset: 0,
+        endings: "WithMarkers",
+        offsetAlongLine: 0,
+        placementTemplate: [100],
+      },
+      rotation: 90,
+      offsetY: 0,
+      rotateClockwise: false,
+    },
+    {
+      type: "CIMSolidStroke",
+      effects: [
+        {
+          type: "CIMGeometricEffectOffset",
+          method: "Bevelled",
+          offset: 3,
+          option: "Fast",
+        },
+        {
+          type: "CIMGeometricEffectDashes",
+          lineDashEnding: "NoConstraint",
+          controlPointEnding: "NoConstraint",
+        },
+      ],
+      enable: false,
+      colorLocked: true,
+      capStyle: "Square",
+      joinStyle: "Miter",
+      lineStyle3D: "Strip",
+      miterLimit: 10,
+      width: 2,
+      color: [0, 7, 89, 255],
+    },
+    {
+      type: "CIMSolidStroke",
+      effects: [
+        {
+          type: "CIMGeometricEffectOffset",
+          method: "Mitered",
+          offset: -3,
+          option: "Fast",
+        },
+        {
+          type: "CIMGeometricEffectDashes",
+          lineDashEnding: "NoConstraint",
+          controlPointEnding: "NoConstraint",
+        },
+      ],
+      enable: true,
+      colorLocked: true,
+      capStyle: "Square",
+      joinStyle: "Miter",
+      lineStyle3D: "Strip",
+      miterLimit: 10,
+      width: 2,
+      color: [28, 84, 244, 255],
+    },
+  ],
+  animations: [],
+};
+
+const routesSymbols = {
+  type: "unique-value",
+  field: "travel_direction",
+  defaultSymbol: new CIMSymbol({
+    data: {
+      type: "CIMSymbolReference",
+      symbol: defaultRouteSymbol,
+    },
+  }),
+  uniqueValueInfos: [
+    {
+      value: "From Candidate",
+      symbol: new CIMSymbol({
+        data: {
+          type: "CIMSymbolReference",
+          symbol: outboundRouteSymbol,
+        },
+      }),
+    },
+    {
+      value: "To Candidate",
+      symbol: new CIMSymbol({
+        data: {
+          type: "CIMSymbolReference",
+          symbol: inboundRouteSymbol,
+        },
+      }),
+    },
+  ],
+};
+
+const tradeAreaSymbol = new SimpleRenderer({
+  type: "simple",
+  symbol: {
+    type: "simple-fill",
+    color: [28, 84, 244, 0.25],
+    outline: {
+      color: [255, 255, 255, 0.25],
+      width: "1px",
+    },
+  },
+});
+
+export { siteSymbol, employeeSymbol, inboundSymbol, outboundSymbol, routesSymbols, tradeAreaSymbol };

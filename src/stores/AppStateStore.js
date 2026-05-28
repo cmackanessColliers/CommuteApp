@@ -12,43 +12,14 @@ const nonPersistedKeys = [
   "map",
   "compMap",
   "mapInteraction",
-  "compMapInteraction",
   "mapAvailable",
-  "compMapAvailable",
-  "marketType",
-  "metroArea",
-  "compMetroArea",
-  "market",
-  "compMarket",
-  "marketId",
-  "compMarketId",
-  "quarter",
-  "year",
-  "submarkets",
-  "compSubmarkets",
-  "subtypes",
-  "submarketIds",
-  "compSubmarketIds",
-  "reportConfig",
-  "compReportConfig",
-  "chartData",
-  "compChartData",
-  "subTypeChartData",
-  "tableData",
-  "officeData",
-  "subTypeData",
-  "officeLayer",
-  "imageLayer",
-  "imageURL",
-  "reportTable",
-  "SubmarketLayer",
   "portal",
   "portalItems",
   "searchString",
-  "marketSummaryVisible",
-  "marketSubtypeSummaryVisible",
-  "marketStatsTableVisible",
-  "backCoverPageVisible",
+  "compareFeatures",
+  "layer", 
+  "baselineFeatures",
+  "baselineLayer",
 ];
 
 const featureLayerStateKeys = [
@@ -90,6 +61,9 @@ const initialState = {
   map: null,
   mapInteraction: null,
   mapAvailable: false,
+  baselineFeatures: null,
+  baselineLayer: null,
+  compareFeatures: null,
   layer: null,
   portal: null,
   portalItems: null,
@@ -110,6 +84,9 @@ const useAppStateStore = create(
       setLayer: (layer) => {
         set({ layer: layer });
       },
+      setCompareFeatures: (coordsList) => set({compareFeatures: coordsList}),
+      setBaselineFeatures: (baseline) => set({baselineFeatures: baseline}),
+      setBaselineLayer: (baseLayer) => ({baselineLayer: baseLayer}),
       setSearchString: (str) => set({ searchString: str }),
       setPortalItems: (items) => set({ portalItems: items }),
       setPortal: async () => {
@@ -124,13 +101,13 @@ const useAppStateStore = create(
           portalConnection.authMode = "immediate";
           await portalConnection.load();
           set({ portal: portalConnection });
-          const SubmarketMap = new FeatureLayer({
-            portalItem: {
-              id: "0a17cf4b0ed14fa3a98daf04bada8b3d",
-            },
-            outFields:["*"]
-          })
-          set({ layer: SubmarketMap });
+          // const SubmarketMap = new FeatureLayer({
+          //   portalItem: {
+          //     id: "0a17cf4b0ed14fa3a98daf04bada8b3d",
+          //   },
+          //   outFields:["*"]
+          // })
+          // set({ layer: SubmarketMap });
         } catch (e) {
           console.error("Failed to set portal after dynamic auth import", e);
         }

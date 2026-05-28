@@ -10,11 +10,12 @@ import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter.js";
 import Query from "@arcgis/core/rest/support/Query.js";
 import { useState, useEffect, useRef } from "react";
 const MapComponent = () => {
-  const {} = useAppStateStore()
+  const map = useAppStateStore((state) => state.map)
+  const setMap = useAppStateStore((state) => state.setMap)
+  const mapAvailable = useAppStateStore((state) => state.mapAvailable)
+  const setMapAvailable = useAppStateStore((state) => state.setMapAvailable)
   const mapRef = useRef(null)
   const [filter, setFilter] = useState("1=1")
-  const [map, setMap] = useState(null);
-  const [mapAvailable, setMapAvailable] = useState(false);
   const [submarketSelect, setSubmarketSelect] = useState(null);
   const highlightRef = useRef(null);   
   const oidSelectRef = useRef(null)
@@ -83,12 +84,15 @@ const MapComponent = () => {
     <arcgis-map
       ref={mapRef}
       id="app-map"
-      // item-id="87a69fb0587e4203ac20a214aeaff134"
+      item-id="839bccb84055424897063abafff65b45"
       auto-destroy-disabled
       onarcgisViewReadyChange={handleViewReady}
     >
       <arcgis-expand slot="top-left" icon="basemap">
         <arcgis-basemap-gallery reference-element="app-map"></arcgis-basemap-gallery>
+      </arcgis-expand>
+      <arcgis-expand slot="top-left" icon="layers">
+        <arcgis-layer-list reference-element="app-map"></arcgis-layer-list>
       </arcgis-expand>
       <arcgis-zoom slot="top-left"></arcgis-zoom>
     </arcgis-map>
