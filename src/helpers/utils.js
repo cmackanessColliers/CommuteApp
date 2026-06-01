@@ -1,10 +1,5 @@
 /* eslint-disable no-unused-vars */
-import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
-import Graphic from "@arcgis/core/Graphic.js";
 import CIMSymbol from "@arcgis/core/symbols/CIMSymbol";
-import CSVLayer from "@arcgis/core/layers/CSVLayer.js";
-import * as locator from "@arcgis/core/rest/locator.js";
-import esriRequest from "@arcgis/core/request.js";
 import { v4 as uuidv4 } from "uuid";
 import Papa from "papaparse";
 import {
@@ -13,6 +8,8 @@ import {
   inboundSymbol,
   outboundSymbol,
 } from "../map-symbols/MapSymbols";
+import useAppStateStore from "../stores/AppStateStore";
+let Graphic, FeatureLayer, CSVLayer, locator, esriRequest;
 
 function toProperCase(str) {
   if (str) {
@@ -128,6 +125,8 @@ async function geocodeLocations(
   coordinateFieldType,
   locationType
 ) {
+  
+  await initializeArcGisModules();
   if (locationType === "address") {
     const atlasNAGeocoder =
       "https://colliers-atlas-standalone.eastus.cloudapp.azure.com/arcgis/rest/services/Geocode_2025Q1/NorthAmerica/GeocodeServer";
@@ -179,12 +178,26 @@ async function geocodeLocations(
   }
 }
 
-async function generateFeaturesFromFileData(file, role) {
-  function getFileExtension(supportedFileType) {
-    return supportedFileType === "shapefile" ? ".zip" : `.${supportedFileType}`;
-  }
+async function initializeArcGisModules() {
+  [Graphic, FeatureLayer, CSVLayer, locator, esriRequest] = await Promise.all([
+    import("@arcgis/core/Graphic.js").then((module) => module.default),
+    import("@arcgis/core/layers/FeatureLayer.js").then(
+      (module) => module.default,
+    ),
+    import("@arcgis/core/layers/CSVLayer.js").then((module) => module.default),
+    import("@arcgis/core/rest/locator.js"),
+    import("@arcgis/core/request.js").then((module) => module.default),
+  ]);
+}
 
-  function getFileType(name) {
+async function generateFeaturesFromFileData(file, role) {
+  await initializeArcGisModules();
+  // function getFileExtension(supportedFileType) {
+  //   return supportedFileType === "shapefile" ? ".zip" : `.${supportedFileType}`;
+  // }
+
+  function getFileType() {
+    //name) {
     // const SupportedFileTypes = {
     //   CSV: "csv",
     //   GeoJson: "geojson",
@@ -236,12 +249,12 @@ async function generateFeaturesFromFileData(file, role) {
   const data = fileToObjectArray(file);
   // console.log(await data);
   const fileRecords = CsvParse(await data).then((records) =>
-    records.map((record) => ({ attributes: record }))
+    records.map((record) => ({ attributes: record })),
   );
   // console.log(await fileRecords);
 
   const portalUrl = `https://atlas.colliers.com/portal`;
-  let publishParameters = {};
+  // let publishParameters = {};
 
   // GPX file does not need publishParameters
   if (fileInfo.type !== "gpx") {
@@ -252,10 +265,10 @@ async function generateFeaturesFromFileData(file, role) {
       JSON.stringify({
         enableGlobalGeocoding: true,
         geocodeServiceUrl:
-          "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer", //"https://colliers-atlas-standalone.eastus.cloudapp.azure.com/arcgis/rest/services/Geocode_2025Q1/NorthAmerica/GeocodeServer",
+          "https://colliers-atlas-standalone.eastus.cloudapp.azure.com/arcgis/rest/services/Geocode_2025Q1/NorthAmerica/GeocodeServer",
         // sourceLocale: getAppStore().getState().appContext?.locale ?? "en", // TODO: use org geocode service
-        resultRecordCount: 2,
-      })
+        resultRecordCount: 1000,
+      }),
     );
     const analyzeResponse = await esriRequest(analyzeUrl, {
       body: fileInfo.data,
@@ -273,12 +286,41 @@ async function generateFeaturesFromFileData(file, role) {
         locationType,
         layerInfo: { fields },
       },
-      records,
     } = await analyzeResponse.data;
 
-    const fieldsForFeatureLayer = fields;
+    // Create a promise that resolves when the user completes the field mapping dialog
+    const fieldMappingPromise = new Promise((resolve) => {
+      const store = useAppStateStore.getState();
+
+      // Store the resolve function so the dialog can call it with the mapped fields
+      store.setFieldMappingResolver(resolve);
+
+      // Pass the field mapping data to the dialog
+      store.setFieldMappingData({
+        addressFields,
+        coordinateFieldName,
+        coordinateFieldType,
+        latitudeFieldName,
+        longitudeFieldName,
+        locationType,
+        fields,
+      });
+
+      // Show the dialog for this specific role
+      store.setFieldMappingDialogVisible(true, role);
+    });
+
+    // Wait for the user to complete the field mapping dialog
+    const mappedFields = await fieldMappingPromise;
+
+    // Handle user cancellation
+    if (!mappedFields) {
+      console.log("User cancelled field mapping");
+    }
+
+    const fieldsForFeatureLayer = mappedFields.fields;
     fieldsForFeatureLayer.forEach(
-      (field) => (field.type = field.type.split("Type")[1].toLowerCase())
+      (field) => (field.type = field.type.split("Type")[1].toLowerCase()),
     );
     fieldsForFeatureLayer.push({
       name: "OBJECTID",
@@ -288,37 +330,33 @@ async function generateFeaturesFromFileData(file, role) {
 
     const featureGraphics = await geocodeLocations(
       await fileRecords,
-      await addressFields,
-      await latitudeFieldName,
-      await longitudeFieldName,
-      await coordinateFieldName,
-      await coordinateFieldType,
-      await locationType
+      mappedFields.addressFields,
+      mappedFields.latitudeFieldName,
+      mappedFields.longitudeFieldName,
+      mappedFields.coordinateFieldName,
+      mappedFields.coordinateFieldType,
+      mappedFields.locationType,
     );
 
-    const roleSymbol = getRoleSymbol(role);
+    const { symbol: roleSymbol, id: roleId } = getRoleSymbol(role);
 
-    const geocodedFeatureLayer = await new FeatureLayer({
+    const geocodedFeatureLayer = new FeatureLayer({
       ...analyzeResponse.data.layerInfo,
       source: await featureGraphics,
       objectIdField: "OBJECTID",
       fields: fieldsForFeatureLayer,
       title: `${role}s from ${fileInfo.type}`,
-      renderer: {
-        type: "simple",
-        symbol: new CIMSymbol({
-          data: {
-            type: "CIMSymbolReference",
-            symbol: roleSymbol, // ENTER SYMBOL JSON HERE
-          },
-        }),
-      },
+      renderer: roleSymbol,
+      id: roleId,
     });
-    return await geocodedFeatureLayer;
+    await geocodedFeatureLayer.load();
+    console.log("geocodedFeatureLayer", geocodedFeatureLayer);
+    return [geocodedFeatureLayer, file.name];
   }
 }
 
 async function getCsvHeaders(csvContent, type) {
+  await initializeArcGisModules();
   const lines = csvContent.split(/\r?\n/); // Split content by line breaks
   if (lines.length > 0) {
     const headers = lines[0].split(","); // Assuming comma as delimiter
@@ -431,6 +469,50 @@ async function negativeToParentheses(value) {
   }
 }
 
+
+async function preprocessCSV(file) {
+  const text = await file.text();
+
+  // Parse CSV correctly using PapaParse
+  const parsed = Papa.parse(text, {
+    header: true,
+    skipEmptyLines: true,
+    dynamicTyping: false,
+  });
+
+  const rows = parsed.data;
+  if (!rows || rows.length === 0) return file;
+
+  // --- CLEAN HEADERS ---
+  const cleanHeaderMap = {};
+  Object.keys(rows[0]).forEach((header) => {
+    const clean = header.replace(/\s+/g, "");
+    cleanHeaderMap[header] = clean;
+  });
+
+  // --- CLEAN ROWS ---
+  const cleanRows = rows.map((row) => {
+    const newRow = {};
+    Object.keys(row).forEach(header => {
+      if (row[header] !== undefined || row[header] !== null || row[header] !== "") {
+        if (row[header].match(/^\$\d+/)) {
+          newRow[cleanHeaderMap[header]] = row[header].replace(/(?<=\d),(?=\d)/g, '').replace("$","")
+        } else {
+          newRow[cleanHeaderMap[header]] = row[header].replace(/(?<=\d),(?=\d)/g, '')
+        }
+      } else {
+        newRow[cleanHeaderMap[header]] = "None"
+      }
+    });
+    return newRow;
+  });
+
+  const cleanedCsv = Papa.unparse(cleanRows);
+
+  // Return new file object
+  return new File([cleanedCsv], file.name, { type: "text/csv" });
+}
+
 export {
   toProperCase,
   numFormatter,
@@ -441,4 +523,5 @@ export {
   generateFeaturesFromFileData,
   getCsvHeaders,
   negativeToParentheses,
+  preprocessCSV,
 };

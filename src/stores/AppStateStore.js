@@ -22,6 +22,11 @@ const nonPersistedKeys = [
   "baselineLayer",
   "tradeAreaLayer",
   "routeLayer",
+  "employeeCountField",
+  "fieldMappingDialogVisible",
+  "fieldMappingRole",
+  "fieldMappingResolver",
+  "fieldMappingData",
 ];
 
 const featureLayerStateKeys = [
@@ -73,6 +78,11 @@ const initialState = {
   portalItems: null,
   searchString: "",
   setupComplete: false,
+  employeeCountField: null, // field for employee count
+  fieldMappingDialogVisible: false, // To control visibility of field mapping dialog
+  fieldMappingRole: null, // Which role (Site/Employee/etc) is currently doing field mapping
+  fieldMappingResolver: null, // Function to resolve when field mapping is complete
+  fieldMappingData: null, // Data passed to the field mapping dialog
 };
 
 const useAppStateStore = create(
@@ -91,6 +101,36 @@ const useAppStateStore = create(
       setCompareFeatures: (coordsList) => set({compareFeatures: coordsList}),
       setBaselineFeatures: (baseline) => set({baselineFeatures: baseline}),
       setBaselineLayer: (baseLayer) => set({baselineLayer: baseLayer}),
+      setEmployeeCountField: (field) => set({ employeeCountField: field }),
+      setFieldMappingDialogVisible: (visible, role = null) => {
+        console.log(
+          "Setting field mapping dialog visibility to: ",
+          visible,
+          "for role:",
+          role,
+        );
+        set({ fieldMappingDialogVisible: visible, fieldMappingRole: role });
+      },
+      setFieldMappingResolver: (resolver) => {
+        set({ fieldMappingResolver: resolver });
+      },
+      getFieldMappingResolver: () => {
+        return get().fieldMappingResolver;
+      },
+      setFieldMappingData: (data) => {
+        set({ fieldMappingData: data });
+      },
+      getFieldMappingData: () => {
+        return get().fieldMappingData;
+      },
+      cleanupFieldMapping: () => {
+        set({
+          fieldMappingDialogVisible: false,
+          fieldMappingRole: null,
+          fieldMappingResolver: null,
+          fieldMappingData: null,
+        });
+      },
       setSearchString: (str) => set({ searchString: str }),
       setPortalItems: (items) => set({ portalItems: items }),
       setPortal: async () => {

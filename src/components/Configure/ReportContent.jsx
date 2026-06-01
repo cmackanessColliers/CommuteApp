@@ -14,6 +14,7 @@ import MapComponent from "../map";
 import { useState, useEffect, useRef, useCallback, } from "react";
 import "@arcgis/map-components/components/arcgis-search";
 import useAppStateStore from "../../stores/AppStateStore";
+import useUIStore from "../../stores/UIStore";
 import Graphic from "@arcgis/core/Graphic";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import CompFeatureList from "./CompFeatureList";
@@ -21,6 +22,7 @@ import BaseFeatureList from "./BaseFeatureList";
 import ColliersLogo from "../../images/ColliersLogo.png"
 import { fieldList, popupTemplate, compRenderer, baseRenderer } from "../../helpers/layerHandling";
 import { getTravelTimeAreas, getRoutes } from "../../helpers/travel_time_helpers";
+import AddEmployees from "./CSVHandling/AddEmployees";
 
 function ReportContent() {
   const map = useAppStateStore((state) => state.map)
@@ -36,6 +38,12 @@ function ReportContent() {
   const routeLayer = useAppStateStore((state) => state.routeLayer)
   const tradeAreaLayer = useAppStateStore((state) => state.tradeAreaLayer)
   const setTradeAreaLayer = useAppStateStore((state) => state.setTradeAreaLayer)
+  const siteFileName = useUIStore((state) => state.siteFileName);
+  const employeeFileName = useUIStore((state) => state.employeeFileName);
+  const {
+    setSiteFileName,
+    setEmployeeFileName,
+  } = useUIStore.getState();
   const formattedTime = new Date().toTimeString().slice(0, 5)
   const [time, setTime] = useState(formattedTime)
   const [pointActive, setPointActive] = useState(false);
@@ -47,7 +55,24 @@ function ReportContent() {
   const [pointIndex, setPointIndex] = useState(1)
   const searchRef = useRef(null); 
   const baseSearchRef = useRef(null); 
-
+  
+  useEffect(() => {    
+    if (!map) return;
+    const existingLayer = map.map.layers.find((l) => l.title === employeeFileName);
+    if (layer && !existingLayer) {
+      layer.queryFeatureCount().then((count) => {
+        if (count >= 100) {
+          layer.featureReduction = {
+            ...featureReductionSettings,
+            symbol: employeeSymbol.symbol,
+          };
+        }
+      });
+      map?.map?.layers?.addMany([layer]);
+      map?.view?.goTo(layer);
+    }
+  }, [layer, map])
+  
   useEffect(() => {
     if (baselineFeatures?.length) {
       setTimeout(() => {
@@ -237,6 +262,7 @@ function ReportContent() {
         popupTemplate: popupTemplate,
         renderer: compRenderer
       })
+      setSiteFileName("Comparison Location")
       // console.log("CompareLayer",CompareLayer)
       map?.map?.layers?.add(CompareLayer)
       setLayer(CompareLayer)
@@ -259,6 +285,7 @@ function ReportContent() {
         popupTemplate: popupTemplate,
         renderer: baseRenderer
       })
+      setSiteFileName("Baseline Location")
       // console.log("BaselineLayer",BaselineLayer)
       map?.map?.layers?.add(BaselineLayer)
       setBaselineLayer(BaselineLayer)
@@ -387,7 +414,7 @@ function ReportContent() {
             <h1 style={{color: "white"}}>Colliers Route Comparison App</h1>
           </div>
           <div style={{ width:"50%", height:"100%", display:"flex", flexDirection:"row"}}>
-            <div style={{width:"43%", height:"100%", alignItems:"center", display:"flex", color:"white", flexDirection:"column", gap:"10px", marginTop:"10px"}}>
+            <div style={{width:"25%", height:"100%", alignItems:"center", display:"flex", color:"white", flexDirection:"column", gap:"10px", marginTop:"10px"}}>
                 <span>Select a Departure Time</span>
                 <CalciteInputTimePicker
                   value={time}
@@ -397,37 +424,20 @@ function ReportContent() {
                   }}
                 />
             </div>
-            <div style={{width:"57%", height:"100%", justifyItems:"center", alignItems:"center", display:"flex", flexDirection:"column", gap:"5px", marginTop:"8px"}}>
-              <span style={{color:"white"}}> Search For a Comparison Location</span>
-              <arcgis-search ref={searchRef} referenceElement={map}/>
-              <CalciteButton scale="s" appearance="outline-fill"
-                disabled={pointActive}
-                onClick={() => {
-                  setPointActive(true)
-                  startDrawing("compare");
-                }}
-              >Click to draw point on map</CalciteButton>
-            </div>
-          </div>
-        </div>
-        <div style={{width:"100%", height:"89%", display:"flex", flexDirection:"row"}}>
-          <MapComponent />
-          <div style={{width:"50%", height:"100%",display:"flex", flexDirection:"column"}}>
-            <div style={{width:"100%", height:"13%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
+            <div style={{width:"75%", height:"100%", justifyItems:"center", alignItems:"center", display:"flex", flexDirection:"column", gap:"5px", marginTop:"8px"}}>
+              <div style={{width:"100%", height:"100%", justifyItems:"center", alignItems:"center", display:"flex", flexDirection:"column", gap:"5px", marginTop:"8px"}}>
+                <span style={{color:"white"}}>Define Baseline Site</span>
+                <arcgis-search ref={baseSearchRef} referenceElement={map}/>
+                <CalciteButton scale="s"
+                  disabled={pointActive}
+                  onClick={() => {
+                    setPointActive(true)
+                    startDrawing("baseline");
+                  }}
+                >Click to draw point on map</CalciteButton>\
               <div style={{textAlign:"center",color:"#000759", textAlign:"center", marginTop:"10px", marginBottom:"8px"}}>
-                <div style={{width:"100%", height:"100%", justifyItems:"center", alignItems:"center", display:"flex", flexDirection:"column", gap:"5px", marginTop:"8px"}}>
-                  <span>Define Baseline Site</span>
-                  <arcgis-search ref={baseSearchRef} referenceElement={map}/>
-                  <CalciteButton scale="s"
-                    disabled={pointActive}
-                    onClick={() => {
-                      setPointActive(true)
-                      startDrawing("baseline");
-                    }}
-                  >Click to draw point on map</CalciteButton>
-                </div>
                 {baselineFeatures?.length > 0 && (
-                  <div style={{position:"absolute", top:"14%", right:"2%", width:"90px"}}>
+                  <div style={{position:"absolute", top:"3%", right:"1%", width:"90px"}}>
                     <CalciteDropdown
                       close-on-select-disabled
                       open={configOpen}
@@ -480,6 +490,15 @@ function ReportContent() {
                   </div>
                 )}
               </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{width:"100%", height:"89%", display:"flex", flexDirection:"row"}}>
+          <MapComponent />
+          <div style={{width:"50%", height:"100%",display:"flex", flexDirection:"column"}}>
+            <div style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
+                <AddEmployees/>
             </div>
               <div style={{display:"flex", flexDirection:"column", height:"86%", gap:"10px"}}>
                 {baselineFeatures?.length && (

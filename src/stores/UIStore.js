@@ -2,36 +2,18 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 const initialState = {
-  marketSummaryVisible: true,
-  marketSubtypeSummaryVisible: true,
-  marketStatsTableVisible: true,
-  backCoverPageVisible: true,
+  siteFileName: null,
+  employeeFileName: null,
 };
 
 const useUIStore = create(
   persist(
     (set) => ({
       ...initialState,
-      setMarketSummaryVisible: (visible) => set({ marketSummaryVisible: visible }),
-      setMarketSubtypeSummaryVisible: (visible) => set({ marketSubtypeSummaryVisible: visible }),
-      setMarketStatsTableVisible: (visible) => set({ marketStatsTableVisible: visible }),
-      setBackCoverPageVisible: (visible) => set({ backCoverPageVisible: visible }),
-      toggleMarketSummary: () =>
-        set((state) => ({
-          marketSummaryVisible: !state.marketSummaryVisible,
-        })),
-      toggleMarketSubtypeSummary: () =>
-        set((state) => ({
-          marketSubtypeSummaryVisible: !state.marketSubtypeSummaryVisible,
-        })),
-      toggleMarketStatsTable: () =>
-        set((state) => ({
-          marketStatsTableVisible: !state.marketStatsTableVisible,
-        })),
-      toggleBackCoverPage: () =>
-        set((state) => ({
-          backCoverPageVisible: !state.backCoverPageVisible,
-        })),
+      setSiteFileName: (siteFileName) => {
+        set({ siteFileName });
+      },
+      setEmployeeFileName: (employeeFileName) => set({ employeeFileName }),
       reset: () =>
         set({
           ...initialState,

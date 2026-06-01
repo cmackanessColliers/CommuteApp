@@ -24,6 +24,39 @@ const MapComponent = () => {
   const highlightRef = useRef(null);   
   const oidSelectRef = useRef(null)
 
+  async function defineActions(event) {
+    const { item } = event;
+
+    if (!item?.layer) return;
+
+    if (!item.layer.loaded) {
+      item.layer.when(() => {});
+    }
+
+    await item?.layer?.load();
+    item.actionsSections = [
+      [
+        {
+          title: "Go to full extent",
+          icon: "zoom-out-fixed",
+          id: "full-extent",
+        },
+      ],
+      [
+        {
+          title: "Increase opacity",
+          icon: "chevron-up",
+          id: "increase-opacity",
+        },
+        {
+          title: "Decrease opacity",
+          icon: "chevron-down",
+          id: "decrease-opacity",
+        },
+      ],
+    ];
+  }
+
   async function handleViewReady(e) {
     setMap(e.target);
     if (!map || !mapAvailable) {
@@ -83,6 +116,33 @@ const MapComponent = () => {
     }
   }
 
+  async function layerListTriggerAction(event, map) {
+    const actionLayer = event.detail.item.layer;
+    // Capture the action id.
+    const id = event.detail.action.id;
+    if (id === "full-extent") {
+      // If the full-extent action is triggered then navigate
+      // to the full extent of the visible layer
+      map.view.goTo(actionLayer.fullExtent).catch((error) => {
+        if (error.name != "AbortError") {
+          console.error(error);
+        }
+      });
+    }else if (id === "increase-opacity") {
+      // If the increase-opacity action is triggered, then
+      // increase the opacity of the GroupLayer by 0.25
+      if (actionLayer.opacity < 1) {
+        actionLayer.opacity += 0.25;
+      }
+    } else if (id === "decrease-opacity") {
+      // If the decrease-opacity action is triggered, then
+      // decrease the opacity of the GroupLayer by 0.25
+      if (actionLayer.opacity > 0) {
+        actionLayer.opacity -= 0.25;
+      }
+    }
+  }
+
   
   useEffect(() => {
     if (layer !== null) {
@@ -129,8 +189,15 @@ const MapComponent = () => {
       <arcgis-expand slot="top-left" icon="basemap">
         <arcgis-basemap-gallery reference-element="app-map"></arcgis-basemap-gallery>
       </arcgis-expand>
-      <arcgis-expand slot="top-left" icon="layers">
-        <arcgis-layer-list reference-element="app-map"></arcgis-layer-list>
+      <arcgis-expand slot="top-left" icon="layers"> 
+        <arcgis-layer-list
+          reference-element="app-map"
+          dragEnabled={true}
+          listItemCreatedFunction={defineActions}
+          onarcgisTriggerAction={(e) => {
+            layerListTriggerAction(e, map);
+          }}
+        ></arcgis-layer-list>
       </arcgis-expand>
       <arcgis-zoom slot="top-left"></arcgis-zoom>
     </arcgis-map>

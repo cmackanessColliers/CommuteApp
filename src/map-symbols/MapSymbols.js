@@ -1407,4 +1407,30 @@ const tradeAreaSymbol = new SimpleRenderer({
   },
 });
 
-export { siteSymbol, employeeSymbol, inboundSymbol, outboundSymbol, routesSymbols, tradeAreaSymbol };
+const featureReductionLabelSymbol = {
+  type: "text",
+  color: "white",
+  font: { family: "Merriweather", style: "normal", weight: "normal" },
+  haloColor: "rgba(0, 0, 0, 0.3)",
+  haloSize: "2px",
+  yoffset: "-5px",
+};
+
+const featureReductionSettings = {
+  type: "cluster",
+  clusterRadius: "100px",
+  clusterMinSize: "30px",
+  clusterMaxSize: "30px",
+  labelingInfo: [
+    {
+      deconflictionStrategy: "none",
+      labelExpressionInfo: {
+        expression: "Text($feature.cluster_count, '#,###')",
+      },
+      symbol: featureReductionLabelSymbol,
+      labelPlacement: "center-center",
+    },
+  ],
+};
+
+export { siteSymbol, employeeSymbol, inboundSymbol, outboundSymbol, routesSymbols, tradeAreaSymbol, featureReductionSettings, };
