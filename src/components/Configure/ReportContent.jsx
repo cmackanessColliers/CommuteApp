@@ -20,7 +20,7 @@ import CompFeatureList from "./CompFeatureList";
 import BaseFeatureList from "./BaseFeatureList";
 import ColliersLogo from "../../images/ColliersLogo.png"
 import { fieldList, popupTemplate, compRenderer, baseRenderer } from "../../helpers/layerHandling";
-import { getTravelTimeAreas } from "../../helpers/travel_time_helpers";
+import { getTravelTimeAreas, getRoutes } from "../../helpers/travel_time_helpers";
 
 function ReportContent() {
   const map = useAppStateStore((state) => state.map)
@@ -32,6 +32,10 @@ function ReportContent() {
   const setBaselineFeatures = useAppStateStore((state) => state.setBaselineFeatures)
   const compareFeatures = useAppStateStore((state) => state.compareFeatures)
   const setCompareFeatures = useAppStateStore((state) => state.setCompareFeatures)
+  const setRouteLayer = useAppStateStore((state) => state.setRouteLayer)
+  const routeLayer = useAppStateStore((state) => state.routeLayer)
+  const tradeAreaLayer = useAppStateStore((state) => state.tradeAreaLayer)
+  const setTradeAreaLayer = useAppStateStore((state) => state.setTradeAreaLayer)
   const formattedTime = new Date().toTimeString().slice(0, 5)
   const [time, setTime] = useState(formattedTime)
   const [pointActive, setPointActive] = useState(false);
@@ -40,6 +44,7 @@ function ReportContent() {
   const [travelDuration, setTravelDuration] = useState(20)
   const [areaType, setAreaType] = useState("isochrone")
   const [isLoading, setIsLoading] = useState(false)
+  const [pointIndex, setPointIndex] = useState(1)
   const searchRef = useRef(null); 
   const baseSearchRef = useRef(null); 
 
@@ -51,6 +56,14 @@ function ReportContent() {
     }
   }, [baselineFeatures])
 
+  useEffect(() => {
+    if (baselineFeatures?.length && compareFeatures?.length) {
+      setTimeout(() => {
+        handleCreateRoutes();
+      }, 2000);
+    }
+  }, [baselineFeatures, compareFeatures])
+
   async function startDrawing(condition) {
     if (!map?.view) return;
     // ✅ Change cursor
@@ -60,7 +73,7 @@ function ReportContent() {
       const { latitude, longitude, x, y } = event.mapPoint;
       const feature = new Graphic({
         attributes: {
-          name: "Manual Point",
+          name: `${condition} Point ${pointIndex}`,
           latitude,
           longitude,
           x,
@@ -80,21 +93,75 @@ function ReportContent() {
         );
       }
       if (!layer) {
-        console.log("feature", feature)
+        // console.log("feature", feature)
         CreateFeatureLayer(feature, condition);
       } else {
         updateLayer(map, feature, layer, condition);
       }
+      setPointIndex(pointIndex + 1)
       // ✅ Reset cursor
       map.view.container.style.cursor = "default";
     });
 
   }
 
+  function handleCreateRoutes() {
+    setIsLoading(true);
+    try {
+      // Call the helper function to get travel time areas
+      const resultsLayer = map?.map?.layers?.find((l) =>
+        l?.title?.includes("Travel Routes"),
+      );
+      if (resultsLayer){
+        map?.map?.remove(resultsLayer)
+      };
+      const routeTime = {"Arrival Time": time, "Departure Time": time}
+      const routeCost = {fuelPerGal: 3, wagePerHour:27}
+      // console.log(
+      //   "compareFeatures", compareFeatures,
+      //   "baselineFeatures", baselineFeatures,
+      //   "Time",routeTime,
+      //   "routeCost",routeCost,)
+      if (
+        (!compareFeatures?.length && !baselineFeatures?.length)
+      ) {
+        setIsLoading(false);
+        return;
+      }
+      console.log("Getting Routes");
+      getRoutes(
+        layer,
+        baselineFeatures,
+        null,
+        routeTime,
+        routeCost
+      ).then(([RouteLayer, rankedSiteRouting]) => {
+        // console.log("RouteLayer", RouteLayer)
+        // console.log("rankedSiteRouting", rankedSiteRouting)
+        map?.map?.layers?.add(RouteLayer)
+        setRouteLayer(RouteLayer)
+        if (
+          resultsLayer &&
+          resultsLayer.title === `Travel Routes` &&
+          areaType !== "h3"
+        ) {
+          resultsLayer.refresh();
+          setIsLoading(false);
+          return;
+        }
+        map?.map?.remove(resultsLayer);
+        setIsLoading(false);
+      });
+    } catch (err) {
+      setIsLoading(false);
+      throw new Error("Problem generating routes: ", err);
+    }
+  }
+
   function handleCreateTradeAreas() {
     setIsLoading(true);
     try {
-      console.log("starting Create Trade Area")
+      // console.log("starting Create Trade Area")
       // Call the helper function to get travel time areas
       const resultsLayer = map?.map?.layers?.find((l) =>
         l?.title?.includes("Trade Areas"),
@@ -102,12 +169,12 @@ function ReportContent() {
       if (resultsLayer){
         map?.map?.remove(resultsLayer)
       };
-      console.log(
-        "areaType", areaType,
-        "baselineFeatures", baselineFeatures,
-        "TravelMode", "driving",
-        "travelDuration", travelDuration*60,
-        "radius",radius,)
+      // console.log(
+      //   "areaType", areaType,
+      //   "baselineFeatures", baselineFeatures,
+      //   "TravelMode", "driving",
+      //   "travelDuration", travelDuration*60,
+      //   "radius",radius,)
       if (
         (travelDuration < 1 && areaType === "isochrone") ||
         (radius < 1 && areaType === "radial")
@@ -115,7 +182,7 @@ function ReportContent() {
         setIsLoading(false);
         return;
       }
-      console.log("Getting Travel Time");
+      // console.log("Getting Travel Time");
       getTravelTimeAreas(
         areaType,
         baselineFeatures,
@@ -125,8 +192,9 @@ function ReportContent() {
         null,
         resultsLayer,
       ).then((tradeAreasLayer) => {
-        console.log("tradeAreasLayer", tradeAreasLayer)
+        // console.log("tradeAreasLayer", tradeAreasLayer)
         map?.map?.layers?.add(tradeAreasLayer)
+        setTradeAreaLayer(tradeAreasLayer)
         extentGetAndGo(tradeAreasLayer)
         if (
           resultsLayer &&
@@ -169,16 +237,15 @@ function ReportContent() {
         popupTemplate: popupTemplate,
         renderer: compRenderer
       })
-      console.log("CompareLayer",CompareLayer)
+      // console.log("CompareLayer",CompareLayer)
       map?.map?.layers?.add(CompareLayer)
       setLayer(CompareLayer)
       CompareLayer
           ?.queryFeatures()
           .then((results) => {
-            console.log("resultFeatures", results?.features)
+            // console.log("resultFeatures", results?.features)
             setCompareFeatures(results?.features)
           });
-      map?.goTo(CompareLayer?.fullExtent)
     }
     if (condition === "baseline") {
       const BaselineLayer = new FeatureLayer({
@@ -192,13 +259,13 @@ function ReportContent() {
         popupTemplate: popupTemplate,
         renderer: baseRenderer
       })
-      console.log("BaselineLayer",BaselineLayer)
+      // console.log("BaselineLayer",BaselineLayer)
       map?.map?.layers?.add(BaselineLayer)
       setBaselineLayer(BaselineLayer)
       BaselineLayer
         ?.queryFeatures()
         .then((results) => {
-          console.log("resultFeatures", results?.features)
+          // console.log("resultFeatures", results?.features)
           setBaselineFeatures(results?.features)
           if (!areaType) {
             setAreaType("isochrone")
@@ -222,7 +289,7 @@ function ReportContent() {
       const result = e.detail.result;
       const geom = result?.feature?.geometry;
       if (geom) {
-        console.log("Result:",result)
+        // console.log("Result:",result)
         const feature = new Graphic({
           attributes: {
             name:result.name,
@@ -236,11 +303,11 @@ function ReportContent() {
         let layer = map.map.layers.find(
           (l) => l.title === "Baseline Locations"
         );
-        console.log(layer)
+        // console.log(layer)
         if (!layer) {
           CreateFeatureLayer(feature, "baseline")
         } else {
-          console.log("layer Exists")
+          // console.log("layer Exists")
           updateLayer(map, feature, layer, "baseline");
         }
       }
@@ -258,7 +325,7 @@ function ReportContent() {
       const result = e.detail.result;
       const geom = result?.feature?.geometry;
       if (geom) {
-        console.log("Result:",result)
+        // console.log("Result:",result)
         const feature = new Graphic({
           attributes: {
             name:result.name,
@@ -270,11 +337,11 @@ function ReportContent() {
           geometry: geom
         })
         let layer = map.map.layers.find((l) => l.title === "Comparison Locations");
-        console.log(layer)
+        // console.log(layer)
         if (!layer) {
           CreateFeatureLayer(feature, "compare")
         } else {
-          console.log("layer Exists")
+          // console.log("layer Exists")
           updateLayer(map, feature, layer, "compare");
         }
       }
@@ -300,7 +367,7 @@ function ReportContent() {
     layer
         ?.queryFeatures()
         .then((results) => {
-          console.log("resultFeatures", results?.features)
+          // console.log("resultFeatures", results?.features)
           if (condition === "compare") {
             setCompareFeatures(results?.features)
           }
@@ -308,7 +375,7 @@ function ReportContent() {
             setBaselineFeatures(results?.features)
           }
         });
-    console.log("layer",layer)
+    // console.log("layer",layer)
   }
 
 
@@ -325,7 +392,7 @@ function ReportContent() {
                 <CalciteInputTimePicker
                   value={time}
                   onCalciteInputTimePickerChange={(e) => {
-                    console.log(e.target.value) 
+                    // console.log(e.target.value) 
                     setTime(e.target.value)
                   }}
                 />
@@ -346,18 +413,18 @@ function ReportContent() {
         <div style={{width:"100%", height:"89%", display:"flex", flexDirection:"row"}}>
           <MapComponent />
           <div style={{width:"50%", height:"100%",display:"flex", flexDirection:"column"}}>
-            <div style={{width:"100%", height:"180px", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
+            <div style={{width:"100%", height:"13%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
               <div style={{textAlign:"center",color:"#000759", textAlign:"center", marginTop:"10px", marginBottom:"8px"}}>
-                <span>Define Baseline Site</span>
                 <div style={{width:"100%", height:"100%", justifyItems:"center", alignItems:"center", display:"flex", flexDirection:"column", gap:"5px", marginTop:"8px"}}>
-                    <arcgis-search ref={baseSearchRef} referenceElement={map}/>
-                    <CalciteButton scale="s"
-                      disabled={pointActive}
-                      onClick={() => {
-                        setPointActive(true)
-                        startDrawing("baseline");
-                      }}
-                    >Click to draw point on map</CalciteButton>
+                  <span>Define Baseline Site</span>
+                  <arcgis-search ref={baseSearchRef} referenceElement={map}/>
+                  <CalciteButton scale="s"
+                    disabled={pointActive}
+                    onClick={() => {
+                      setPointActive(true)
+                      startDrawing("baseline");
+                    }}
+                  >Click to draw point on map</CalciteButton>
                 </div>
                 {baselineFeatures?.length > 0 && (
                   <div style={{position:"absolute", top:"14%", right:"2%", width:"90px"}}>
@@ -376,7 +443,7 @@ function ReportContent() {
                               onCalciteComboboxChange={(e)=>setAreaType(e.target.value)}
                               placeholder="Select Trade Area Type"
                             >
-                              <CalciteComboboxItem value="isochrone" heading={"Travel Time"}></CalciteComboboxItem>
+                              <CalciteComboboxItem value="isochrone" heading={"Travel Time"} selected={areaType==="isochrone"}></CalciteComboboxItem>
                               <CalciteComboboxItem value="radial" heading={"Radius"}></CalciteComboboxItem>
                             </CalciteCombobox>
                           </CalciteLabel>
@@ -396,7 +463,7 @@ function ReportContent() {
                             <CalciteLabel layout="block"> Set Travel Time
                               <CalciteInputNumber
                                 onCalciteInputNumberChange={(e) => {setTravelDuration(e.target.value)}}
-                                value={travelDuration}
+                                value={String(travelDuration)}
                               ></CalciteInputNumber>
                             </CalciteLabel>
                           </CalciteDropdownItem>
@@ -414,8 +481,28 @@ function ReportContent() {
                 )}
               </div>
             </div>
-              <BaseFeatureList />              
-              <CompFeatureList />
+              <div style={{display:"flex", flexDirection:"column", height:"86%", gap:"10px"}}>
+                {baselineFeatures?.length && (
+                  <>
+                    <div style={{width:"97%", marginInline:"auto", backgroundColor:"#eaeaeb", outline:"1px solid #CCCDD5", marginBottom:"4px", marginTop:"2px", borderRadius: "var(--root-border-radius)",boxShadow: "var(--optimal-shadow)",}}>
+                      <h2 style={{textAlign:"center"}}>Baseline Sites</h2>
+                    </div>
+                    <div style={{display:"flex", flexDirection:"column", overflow:"auto", minHeight:"20%", maxheight:"50%", width:"98%"}}>
+                      <BaseFeatureList />              
+                    </div>
+                  </>
+                )}
+                {compareFeatures?.length && (
+                  <>
+                    <div style={{width:"97%", marginInline:"auto", backgroundColor:"#eaeaeb", outline:"1px solid #CCCDD5", marginBottom:"4px", marginTop:"2px", borderRadius: "var(--root-border-radius)",boxShadow: "var(--optimal-shadow)",}}>
+                      <h2 style={{textAlign:"center"}}>Comparison Sites</h2>
+                    </div>
+                    <div style={{display:"flex", flexDirection:"column", overflow:"auto", minHeight:"20%", maxheight:"50%"}}>
+                      <CompFeatureList />
+                    </div>
+                  </>
+                )}
+              </div>
           </div>
         </div>
     </div>

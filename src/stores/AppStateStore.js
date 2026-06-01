@@ -20,6 +20,8 @@ const nonPersistedKeys = [
   "layer", 
   "baselineFeatures",
   "baselineLayer",
+  "tradeAreaLayer",
+  "routeLayer",
 ];
 
 const featureLayerStateKeys = [
@@ -65,6 +67,8 @@ const initialState = {
   baselineLayer: null,
   compareFeatures: null,
   layer: null,
+  tradeAreaLayer: null,
+  routeLayer: null,
   portal: null,
   portalItems: null,
   searchString: "",
@@ -81,12 +85,12 @@ const useAppStateStore = create(
       },
       setMapAvailable: (available) => set({ mapAvailable: available }),
       setMapInteraction: (interaction) => set({ mapInteraction: interaction }),
-      setLayer: (layer) => {
-        set({ layer: layer });
-      },
+      setLayer: (layer) => {set({ layer: layer });},
+      setRouteLayer: (routeLayer) => {set({ routeLayer: routeLayer });},
+      setTradeAreaLayer: (TradeAreaLayer) => {set({ TradeAreaLayer: TradeAreaLayer });},
       setCompareFeatures: (coordsList) => set({compareFeatures: coordsList}),
       setBaselineFeatures: (baseline) => set({baselineFeatures: baseline}),
-      setBaselineLayer: (baseLayer) => ({baselineLayer: baseLayer}),
+      setBaselineLayer: (baseLayer) => set({baselineLayer: baseLayer}),
       setSearchString: (str) => set({ searchString: str }),
       setPortalItems: (items) => set({ portalItems: items }),
       setPortal: async () => {

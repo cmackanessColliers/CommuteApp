@@ -8,12 +8,16 @@ import "@arcgis/map-components/components/arcgis-zoom";
 import "@arcgis/map-components/components/arcgis-basemap-gallery";
 import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter.js";
 import Query from "@arcgis/core/rest/support/Query.js";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 const MapComponent = () => {
   const map = useAppStateStore((state) => state.map)
   const setMap = useAppStateStore((state) => state.setMap)
   const mapAvailable = useAppStateStore((state) => state.mapAvailable)
   const setMapAvailable = useAppStateStore((state) => state.setMapAvailable)
+  const routeLayer = useAppStateStore((state) => state.routeLayer)
+  const layer = useAppStateStore((state) => state.layer);
+  const baselineLayer = useAppStateStore((state) => state.baselineLayer);
+  const tradeAreaLayer = useAppStateStore((state) => state.tradeAreaLayer)
   const mapRef = useRef(null)
   const [filter, setFilter] = useState("1=1")
   const [submarketSelect, setSubmarketSelect] = useState(null);
@@ -78,6 +82,40 @@ const MapComponent = () => {
       );
     }
   }
+
+  
+  useEffect(() => {
+    if (layer !== null) {
+      const compLayer = map?.map?.layers.items.find(
+        (layer) => layer.title === layer?.title,
+      );
+      map?.map?.reorder(compLayer, map?.map?.layers?.length - 1);
+    }
+    if (baselineLayer !== null) {
+      const baseLayer = map?.map?.layers.items.find(
+        (layer) => layer.title === baselineLayer?.title,
+      );
+      map?.map?.reorder(baseLayer, map?.map?.layers?.length - 2);
+    }
+    if (routeLayer) {
+      const routingLayer = map?.map?.layers.items.find(
+        (layer) => layer.title === routeLayer?.title,
+      );
+      map?.map?.reorder(routingLayer, map?.map?.layers?.length - 3);
+    }
+    if (tradeAreaLayer) {
+      const AreaLayer = map?.map?.layers.items.find(
+        (layer) => layer.title === tradeAreaLayer?.title,
+      );
+      map?.map?.reorder(AreaLayer, map?.map?.layers?.length - 4);
+    }
+  }, [
+    map,
+    routeLayer,
+    tradeAreaLayer,
+    layer,
+    baselineLayer,
+  ]);
 
 
   return(

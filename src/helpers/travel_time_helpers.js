@@ -3,9 +3,13 @@ import {
   processH3Results,
   processRouteResults,
 } from "./worker_preps/travel_time_processing";
+import * as bufferOperator from "@arcgis/core/geometry/operators/bufferOperator.js";
+import * as unionOperator from "@arcgis/core/geometry/operators/unionOperator.js"
+import * as projection from "@arcgis/core/geometry/projection";
+import SpatialReference from "@arcgis/core/geometry/SpatialReference";
 
 import { rankingFields } from "./routing_fields";
-import { formatter, intFormatter } from "./utils";
+import { formatter, intFormatter, numFormatter } from "./utils";
 import { routesSymbols, tradeAreaSymbol } from "../map-symbols/MapSymbols";
 
 let Graphic, Circle, FeatureLayer, TravelTimeClient;
@@ -251,6 +255,7 @@ async function generateGraphics(
           }))),
         );
       }
+      console.log("sourceFeatures",sourceFeatures)
 
       const destinationFeatures = await destinationSites
         ?.queryFeatures()
@@ -265,67 +270,6 @@ async function generateGraphics(
             },
           }))),
         );
-      }
-
-      if (sourceSites !== null && destinationSites !== null) {
-        // Full route chain
-        // Arrival search type
-        // Departure search type
-        features.map((feature) => {
-          const arrival_searches = [];
-          const departure_searches = [];
-          const candidateLocation = {
-            id: `Candidate ${feature.attributes[candidateOidField]}`,
-            coords: {
-              lat: feature?.geometry?.latitude || 39.8283,
-              lng: feature?.geometry?.longitude || -98.5795,
-            },
-          };
-          const locations = [candidateLocation].concat(
-            ...sourceLocations,
-            ...destinationLocations,
-          );
-          let sourceSitesIndexer = 0;
-          while (sourceSitesIndexer < sourceLocations.length) {
-            const sourceLocationsSubset = sourceLocations
-              .slice(sourceSitesIndexer, sourceSitesIndexer + 2)
-              .map((location) => location.id);
-            arrival_searches.push({
-              id: `Source sites [${sourceLocationsSubset}] to ${candidateLocation.id}`,
-              departure_location_ids: sourceLocationsSubset,
-              arrival_location_id: candidateLocation.id,
-              transportation: { type: "driving" },
-              arrival_time: convert24HtoISO(routeTimeOfDays["Arrival Time"]),
-              properties: ["travel_time", "distance", "route"],
-            });
-            // INCREMENT TO NEXT SET OF FEATURES
-            sourceSitesIndexer += 2;
-          }
-          let destinationSitesIndexer = 0;
-          while (destinationSitesIndexer < destinationLocations.length) {
-            const destinationLocationsSubset = destinationLocations
-              .slice(destinationSitesIndexer, destinationSitesIndexer + 2)
-              .map((location) => location.id);
-            departure_searches.push({
-              id: `${candidateLocation.id} to locations [${destinationLocationsSubset}]`,
-              departure_location_id: candidateLocation.id,
-              arrival_location_ids: destinationLocationsSubset,
-              transportation: { type: "driving" },
-              departure_time: convert24HtoISO(
-                routeTimeOfDays["Departure Time"],
-              ),
-              properties: ["travel_time", "distance", "route"],
-            });
-            destinationSitesIndexer += 2;
-          }
-          data.push(
-            travelTimeClient.routes({
-              locations,
-              arrival_searches: arrival_searches,
-              departure_searches: departure_searches,
-            }),
-          );
-        });
       }
 
       if (sourceSites && !destinationSites) {
@@ -370,48 +314,6 @@ async function generateGraphics(
         });
       }
 
-      if (destinationSites && !sourceSites) {
-        // CandidateSites to DestinationSites only
-        // Departure search type
-        //SINGLE DEPARTURE LOCATION
-        features.map((feature) => {
-          const departure_searches = [];
-          const candidateLocation = {
-            id: `Candidate ${feature.attributes[candidateOidField]}`,
-            coords: {
-              lat: feature?.geometry?.latitude || 39.8283,
-              lng: feature?.geometry?.longitude || -98.5795,
-            },
-          };
-          const locations = destinationLocations.concat([candidateLocation]);
-          let destinationSitesIndexer = 0;
-          while (destinationSitesIndexer < destinationLocations.length) {
-            const destinationLocationsSubset = destinationLocations
-              .slice(destinationSitesIndexer, destinationSitesIndexer + 2)
-              .map((location) => location.id);
-            departure_searches.push({
-              id: `${candidateLocation.id} to location [${destinationLocationsSubset}]`,
-              departure_location_id: candidateLocation.id,
-              arrival_location_ids: destinationLocationsSubset,
-              transportation: { type: "driving" },
-              departure_time: convert24HtoISO(
-                routeTimeOfDays["Departure Time"],
-              ),
-              properties: ["travel_time", "distance", "route"],
-            });
-            destinationSitesIndexer += 2;
-          }
-          console.log("locations", locations);
-
-          data.push(
-            travelTimeClient.routes({
-              locations,
-              departure_searches: departure_searches,
-            }),
-          );
-        });
-      }
-
       const routeData = await Promise.allSettled(data).then((results) => {
         return results.map((result) => result.value.results).flat();
       });
@@ -423,6 +325,7 @@ async function generateGraphics(
         candidateOidField,
         routeCosts,
       );
+      console.log("processedRoutes", processedRoutes);
       const routeGraphics = processedRoutes.map((r) => {
         oidCounter += 1;
         return new Graphic({
@@ -432,13 +335,14 @@ async function generateGraphics(
             spatialReference: { wkid: 4326 },
           },
           attributes: {
-            candidateSite: r.candidateAttributes?.[candidateOidField],
+            candidateSite: r.candidateAttributes?.name,
             routedSite: r.locationId,
+            routedSiteName: sourceFeatures.find(feature => String(feature.attributes.objectid) === String(r.locationId))?.attributes?.name,
             travel_direction: r.candidateId ? "From Candidate" : "To Candidate",
-            duration: r.durationMin,
-            laborCost: r.laborCost,
-            distance: r.distanceMiles,
-            fuelCost: r.fuelCost,
+            duration: Number(numFormatter(r.durationMin, 2, 2)),
+            laborCost: Number(numFormatter(r.laborCost, 2, 2)),
+            distance: Number(numFormatter(r.distanceMiles, 2, 2)),
+            fuelCost: Number(numFormatter(r.fuelCost, 2, 2)),
             objectid: oidCounter,
           },
         });
@@ -525,9 +429,19 @@ async function getRoutes(
     routeCosts, //11
   );
 
-  const routeFields = Object.keys(routeGraphics?.[0]?.attributes).map(
+  console.log("RouteGraphics", routeGraphics)
+  const crossingGraphics = await findCrossings(routeGraphics)
+  console.log("crossingGraphics",crossingGraphics)
+  const routeFields = Object.keys(crossingGraphics?.[0]?.attributes).map(
     (attributeName) => {
-      const jsType = typeof routeGraphics?.[0]?.attributes[attributeName];
+      if (attributeName === "routedSiteName") {
+        return {
+          name: attributeName,
+          alias: attributeName.replaceAll("_", " "),
+          type: "string",
+        };
+      }
+      const jsType = typeof crossingGraphics?.[0]?.attributes[attributeName];
       const esriType = jsType === "number" ? "double" : jsType;
       return {
         name: attributeName,
@@ -537,9 +451,10 @@ async function getRoutes(
     },
   );
 
+
   const travelRoutes = await new FeatureLayer({
     title: "Travel Routes",
-    source: routeGraphics,
+    source: crossingGraphics,
     objectIdField: "objectid",
     spatialReference: { wkid: 4326 },
     fields: routeFields,
@@ -552,7 +467,7 @@ async function getRoutes(
   });
   const rankedSiteRouting = await rankRoutes(routeGraphics, candidateSites);
   console.log(
-    "rankedSiteRouteing",
+    "rankedSiteRouting",
     await rankedSiteRouting.map((site) => site.attributes),
   );
   console.log("ranking fields", rankingFields);
@@ -571,16 +486,17 @@ async function getRoutes(
 async function rankRoutes(routeGraphics, candidateSites) {
   const oidField = candidateSites[0]?.layer?.objectIdField;
   const fieldsToRank = {
-    // averageTravelDistance: "travelDistanceRank",
-    // averageTravelDuration: "travelDurationRank",
-    // averageLaborCost: "laborCostRank",
-    // averageFuelCost: "fuelCostRank",
+    averageTravelDistance: "travelDistanceRank",
+    averageTravelDuration: "travelDurationRank",
+    averageLaborCost: "laborCostRank",
+    averageFuelCost: "fuelCostRank",
   };
 
   // CALCULATE AGGREGATES BY SITE
   const rankedSites = candidateSites.map((candidateSite) => {
-    console.log(`${candidateSite.attributes?.building}`, candidateSite);
+    console.log(`${candidateSite.attributes?.name}`, candidateSite);
     const candidateSiteOid = candidateSite.attributes[oidField];
+    const candidateSiteName = candidateSite.attributes?.name
     // SUBSET OF SITE ROUTES
     const siteRoutes = routeGraphics.filter(
       (route) =>
@@ -621,15 +537,16 @@ async function rankRoutes(routeGraphics, candidateSites) {
       // },
       attributes: {
         objectid: candidateSiteOid,
-        averageTravelDistance: Number(formatter.format(averageTravelDistance)),
-        averageTravelDuration: Number(formatter.format(averageTravelDuration)),
-        averageLaborCost: Number(formatter.format(averageLaborCost)),
-        averageFuelCost: Number(formatter.format(averageFuelCost)),
-        // travelDistanceRank: null,
-        // travelDurationRank: null,
-        // laborCostRank: null,
-        // fuelCostRank: null,
-        // averageRank: null,
+        candidateSiteName: candidateSiteName,
+        averageTravelDistance: Number(numFormatter(averageTravelDistance, 0, 2)),
+        averageTravelDuration: Number(numFormatter(averageTravelDuration, 0, 2)),
+        averageLaborCost: Number(numFormatter(averageLaborCost, 0, 2)),
+        averageFuelCost: Number(numFormatter(averageFuelCost, 0,2)),
+        travelDistanceRank: null,
+        travelDurationRank: null,
+        laborCostRank: null,
+        fuelCostRank: null,
+        averageRank: null,
       },
     });
     console.log(
@@ -658,20 +575,62 @@ async function rankRoutes(routeGraphics, candidateSites) {
       ) / arrayOfRanks.length;
     site.attributes.averageRank = Number(intFormatter.format(avgRankItem));
   });
-  // // CALCULATE THE AVERAGE RANK OF EACH SITE
-  // rankedSites.forEach((site) => {
-  //   const arrayOfRanks = Object.values(fieldsToRank).map(
-  //     (rankFieldName) => site.attributes[rankFieldName]
-  //   );
-  //   const avgRankItem =
-  //     arrayOfRanks.reduce(
-  //       (totalRank, currentRank) => totalRank + currentRank,
-  //       0
-  //     ) / arrayOfRanks.length;
-  //   site.attributes.averageRank = Number(intFormatter.format(avgRankItem))
-  // });
+  // CALCULATE THE AVERAGE RANK OF EACH SITE
+  rankedSites.forEach((site) => {
+    const arrayOfRanks = Object.values(fieldsToRank).map(
+      (rankFieldName) => site.attributes[rankFieldName]
+    );
+    const avgRankItem =
+      arrayOfRanks.reduce(
+        (totalRank, currentRank) => totalRank + currentRank,
+        0
+      ) / arrayOfRanks.length;
+    site.attributes.averageRank = Number(intFormatter.format(avgRankItem))
+  });
 
   return rankedSites;
+}
+
+async function findCrossings(graphics) {
+  const ALBERS_EQ_AREA = new SpatialReference({ wkid: 102003 });
+  async function projectToEqualArea(geometry) {
+    await projection.load();
+    return projection.project(geometry, ALBERS_EQ_AREA);
+  }
+  const crossingLayer = new FeatureLayer ({
+    portalItem: {
+      id: "eb522a2029b44dcc977793546cebf1a2"
+    }, 
+    spatialReference: { wkid:4326 }
+  })
+  let unionGeom
+  for (const graphic of graphics) {
+    console.log(`Calculating Geometry for ${graphic.attributes.objectid}`)
+    const projGeom = await projectToEqualArea(graphic.geometry)
+    console.log(projGeom)
+    const bufferGeom = bufferOperator.execute(projGeom, 100, {unit:"feet"})
+    const featureQuery = crossingLayer.createQuery();
+    featureQuery.geometry = bufferGeom
+    featureQuery.where = "POSXING='At Grade'"
+    featureQuery.outFields = ["*"]
+    featureQuery.returnGeometry = false
+    const crossingSites = await crossingLayer.queryFeatures(featureQuery).then((results) => {
+      if (results) {
+        console.log(results.features)
+        const crossingFeatures = results.features
+        graphic.attributes.railCrossings = crossingFeatures?.length || 0
+      }
+    })
+    unionGeom = unionGeom
+        ? unionOperator.execute(unionGeom, bufferGeom)
+        : bufferGeom;
+    
+  }
+  graphics.forEach((graphic) => {
+    console.log("CrossingGraphic", graphic.attributes)
+  })
+  console.log("union Geom", unionGeom)
+  return graphics
 }
 
 export { getTravelTimeAreas, getRoutes };
