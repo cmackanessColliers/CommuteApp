@@ -26,18 +26,19 @@ function toProperCase(str) {
 function getRoleSymbol(role) {
   switch (role) {
     case "Site":
-      return siteSymbol;
+      return { symbol: siteSymbol, id: "sites" };
     case "Employee":
-      return employeeSymbol;
+      return { symbol: employeeSymbol, id: "employees" };
     case "RouteSource":
-      return inboundSymbol;
+      return { symbol: inboundSymbol, id: "routeSources" };
     case "RouteDestination":
-      return outboundSymbol;
+      return { symbol: outboundSymbol, id: "routeDestinations" };
+    case "Retail":
+      return { symbol: retailSymbol, id: "retail" };
     default:
       break;
   }
 }
-
 function numFormatter(num, minDigits, maxDigits) {
   if (minDigits === undefined) minDigits = 0;
   if (maxDigits === undefined) maxDigits = 2;
@@ -131,8 +132,8 @@ async function geocodeLocations(
     const atlasNAGeocoder =
       "https://colliers-atlas-standalone.eastus.cloudapp.azure.com/arcgis/rest/services/Geocode_2025Q1/NorthAmerica/GeocodeServer";
     const inputAddresses = addressCandidates.map((candidate, i) => {
-      candidate.attributes.OBJECTID = i + 1;
-      const requestObject = { OBJECTID: i + 1 };
+      candidate.attributes.objectid = i + 1;
+      const requestObject = { objectid: i + 1 };
       Object.entries(addressFields).forEach(([key, value]) => {
         requestObject[`${key}`] = candidate.attributes[`${value}`];
       });
@@ -145,7 +146,7 @@ async function geocodeLocations(
       const candidateLocation = addressLocations.find(
         (location) =>
           location.attributes.ResultID ===
-          candidateAttributes.attributes.OBJECTID
+          candidateAttributes.attributes.objectid
       );
       return new Graphic({
         attributes: candidateAttributes.attributes,
@@ -323,9 +324,9 @@ async function generateFeaturesFromFileData(file, role) {
       (field) => (field.type = field.type.split("Type")[1].toLowerCase()),
     );
     fieldsForFeatureLayer.push({
-      name: "OBJECTID",
+      name: "objectid",
       type: "oid",
-      alias: "OBJECTID",
+      alias: "objectid",
     });
 
     const featureGraphics = await geocodeLocations(
@@ -343,7 +344,7 @@ async function generateFeaturesFromFileData(file, role) {
     const geocodedFeatureLayer = new FeatureLayer({
       ...analyzeResponse.data.layerInfo,
       source: await featureGraphics,
-      objectIdField: "OBJECTID",
+      objectIdField: "objectid",
       fields: fieldsForFeatureLayer,
       title: `${role}s from ${fileInfo.type}`,
       renderer: roleSymbol,

@@ -49,6 +49,7 @@ async function generateGraphics(
   destinationSites = undefined,
   routeTimeOfDays = undefined,
   routeCosts = undefined,
+  nameField = undefined,
 ) {
   await initializeModules();
   console.log(
@@ -67,7 +68,7 @@ async function generateGraphics(
   console.table(
     features.map((f) => ({
       coords: f.geometry?.latitude + ", " + f.geometry?.longitude,
-      attributes: f.attributes.name,
+      attributes: f.attributes[nameField] || f.attributes.name || f.attributes.objectid,
     })),
   );
   const travelTimeClient = new TravelTimeClient(
@@ -304,13 +305,23 @@ async function generateGraphics(
             sourceSitesIndexer += 2;
           }
           // RUN SEARCH AFTER ALL SOURCE LOCATIONS HAVE BEEN ITERATED WITH CANDIDATE SITES
-          console.log("locations", locations);
-          data.push(
-            travelTimeClient.routes({
+          console.log("locations", {
               locations,
               arrival_searches: arrival_searches,
-            }),
-          );
+            });
+          const batchSize = 10;
+
+          for (let i = 0; i < arrival_searches.length; i += batchSize) {
+            const batch = arrival_searches.slice(i, i + batchSize);
+
+            data.push(
+              travelTimeClient.routes({
+                locations,
+                arrival_searches: batch,
+              })
+            );
+          }
+
         });
       }
 
@@ -337,7 +348,7 @@ async function generateGraphics(
           attributes: {
             candidateSite: r.candidateAttributes?.name,
             routedSite: r.locationId,
-            routedSiteName: sourceFeatures.find(feature => String(feature.attributes.objectid) === String(r.locationId))?.attributes?.name,
+            routedSiteName: sourceFeatures.find(feature => String(feature.attributes.objectid) === String(r.locationId))?.attributes[nameField],
             travel_direction: r.candidateId ? "From Candidate" : "To Candidate",
             duration: Number(numFormatter(r.durationMin, 2, 2)),
             laborCost: Number(numFormatter(r.laborCost, 2, 2)),
@@ -413,6 +424,7 @@ async function getRoutes(
   destinationSites = undefined,
   routeTimeOfDays = undefined,
   routeCosts = undefined,
+  nameField = undefined,
 ) {
   await initializeModules();
   const routeGraphics = await generateGraphics(
@@ -427,6 +439,7 @@ async function getRoutes(
     destinationSites, //9
     routeTimeOfDays, //10
     routeCosts, //11
+    nameField //12
   );
 
   console.log("RouteGraphics", routeGraphics)
@@ -605,9 +618,9 @@ async function findCrossings(graphics) {
   })
   let unionGeom
   for (const graphic of graphics) {
-    console.log(`Calculating Geometry for ${graphic.attributes.objectid}`)
+    // console.log(`Calculating Geometry for ${graphic.attributes.objectid}`)
     const projGeom = await projectToEqualArea(graphic.geometry)
-    console.log(projGeom)
+    // console.log(projGeom)
     const bufferGeom = bufferOperator.execute(projGeom, 100, {unit:"feet"})
     const featureQuery = crossingLayer.createQuery();
     featureQuery.geometry = bufferGeom
@@ -616,7 +629,7 @@ async function findCrossings(graphics) {
     featureQuery.returnGeometry = false
     const crossingSites = await crossingLayer.queryFeatures(featureQuery).then((results) => {
       if (results) {
-        console.log(results.features)
+        // console.log(results.features)
         const crossingFeatures = results.features
         graphic.attributes.railCrossings = crossingFeatures?.length || 0
       }
@@ -627,7 +640,7 @@ async function findCrossings(graphics) {
     
   }
   graphics.forEach((graphic) => {
-    console.log("CrossingGraphic", graphic.attributes)
+    // console.log("CrossingGraphic", graphic.attributes)
   })
   console.log("union Geom", unionGeom)
   return graphics

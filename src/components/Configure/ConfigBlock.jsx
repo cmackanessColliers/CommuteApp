@@ -10,21 +10,16 @@ import {
   CalciteButton,
 } from "@esri/calcite-components-react";
 
-import MapComponent from "../map";
 import { useState, useEffect, useRef, useCallback, } from "react";
 import "@arcgis/map-components/components/arcgis-search";
 import useAppStateStore from "../../stores/AppStateStore";
 import useUIStore from "../../stores/UIStore";
 import Graphic from "@arcgis/core/Graphic";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
-import CompFeatureList from "./CompFeatureList";
-import BaseFeatureList from "./BaseFeatureList";
-import ColliersLogo from "../../images/ColliersLogo.png"
 import { fieldList, popupTemplate, compRenderer, baseRenderer } from "../../helpers/layerHandling";
 import { getTravelTimeAreas, getRoutes } from "../../helpers/travel_time_helpers";
 import AddEmployees from "./CSVHandling/AddEmployees";
-import { employeeSymbol, featureReductionSettings } from "../../map-symbols/MapSymbols";
-import SimpleRenderer from "@arcgis/core/renderers/SimpleRenderer";
+import AddSites from "./CSVHandling/AddSites";
 import { generateCommuteAnalysis } from "../../helpers/CommuteAnalysis";
 
 function ReportContent() {
@@ -45,7 +40,6 @@ function ReportContent() {
   const siteFileName = useUIStore((state) => state.siteFileName);
   const employeeFileName = useUIStore((state) => state.employeeFileName);
   const employeeCountField = useAppStateStore((state) => state.employeeCountField);
-  const configReady = useUIStore((state) => state.configReady);
   const {
     setSiteFileName,
     setEmployeeFileName,
@@ -425,128 +419,27 @@ function ReportContent() {
 
 
   return (
-    <div style={{display:"flex", flexDirection:"column", height:"100vh", width:"100vw"}}>
-        <div style={{display:"flex", flexDirection:"row", height:"13%", width:"100%", backgroundColor: "#000759"}}>
-          <div style={{width:"50%", height:"100%", display:"flex", alignItems:"center", flexDirection:"row", gap:"10px"}}>
-            <img src={ColliersLogo} alt="" style={{height:"50%", width:"80px", objectFit:"contain", marginLeft:"10px"}}></img>
-            <h1 style={{color: "white"}}>Colliers Route Comparison App</h1>
-          </div>
-          {configReady && (
-            <div style={{ width:"50%", height:"100%", display:"flex", flexDirection:"row"}}>
-              <div style={{width:"25%", height:"100%", alignItems:"center", display:"flex", color:"white", flexDirection:"column", gap:"10px", marginTop:"10px"}}>
-                  <span>Select a Departure Time</span>
-                  <CalciteInputTimePicker
-                    value={time}
-                    onCalciteInputTimePickerChange={(e) => {
-                      // console.log(e.target.value) 
-                      setTime(e.target.value)
-                    }}
-                  />
-              </div>
-              <div style={{width:"75%", height:"100%", justifyItems:"center", alignItems:"center", display:"flex", flexDirection:"column", gap:"5px", marginTop:"8px"}}>
-                <div style={{width:"100%", height:"100%", justifyItems:"center", alignItems:"center", display:"flex", flexDirection:"column", gap:"5px", marginTop:"8px"}}>
-                  <span style={{color:"white"}}>Define Baseline Site</span>
-                  <arcgis-search ref={baseSearchRef} referenceElement={map}/>
-                  <CalciteButton scale="s"
-                    disabled={pointActive}
-                    onClick={() => {
-                      setPointActive(true)
-                      startDrawing("baseline");
-                    }}
-                  >Click to draw point on map</CalciteButton>
-                <div style={{textAlign:"center",color:"#000759", textAlign:"center", marginTop:"10px", marginBottom:"8px"}}>
-                  {baselineFeatures?.length > 0 && (
-                    <div style={{position:"absolute", top:"3%", right:"3%", width:"90px"}}>
-                      <CalciteDropdown
-                        close-on-select-disabled
-                        open={configOpen}
-                        scale="l"
-                      >
-                        <CalciteButton slot="trigger" style={{fontSize:"12px", borderRadius:"10px", whiteSpace:"normal", height:"auto"}} onClick={()=>setConfigOpen(true)}>Route and<br/>Trade Area<br/>Config</CalciteButton>
-                          <CalciteDropdownItem>
-                            <CalciteLabel layout="block"> Set Trade Area Type
-                              <CalciteCombobox
-                                selectionMode="single"
-                                overlayPositioning="fixed"
-                                value={areaType}
-                                onCalciteComboboxChange={(e)=>setAreaType(e.target.value)}
-                                placeholder="Select Trade Area Type"
-                              >
-                                <CalciteComboboxItem value="isochrone" heading={"Travel Time"} selected={areaType==="isochrone"}></CalciteComboboxItem>
-                                <CalciteComboboxItem value="radial" heading={"Radius"}></CalciteComboboxItem>
-                              </CalciteCombobox>
-                            </CalciteLabel>
-                          </CalciteDropdownItem>
-                          {areaType === "radial" && (
-                            <CalciteDropdownItem>
-                              <CalciteLabel layout="block"> Set Radius
-                                <CalciteInputNumber
-                                  onCalciteInputNumberChange={(e) => {setRadius(e.target.value)}}
-                                  value={radius}
-                                ></CalciteInputNumber>
-                              </CalciteLabel>
-                            </CalciteDropdownItem>
-                          )}
-                          {areaType === "isochrone" && (
-                            <CalciteDropdownItem>
-                              <CalciteLabel layout="block"> Set Travel Time
-                                <CalciteInputNumber
-                                  onCalciteInputNumberChange={(e) => {setTravelDuration(e.target.value)}}
-                                  value={String(travelDuration)}
-                                ></CalciteInputNumber>
-                              </CalciteLabel>
-                            </CalciteDropdownItem>
-                          )}
-                          <CalciteDropdownItem>
-                            <CalciteButton width="full"
-                              onClick={()=>{
-                                setConfigOpen(false)
-                                handleCreateTradeAreas()
-                              }}
-                            >Submit</CalciteButton>
-                          </CalciteDropdownItem>
-                      </CalciteDropdown>
-                    </div>
-                  )}
-                </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        <div style={{width:"100%", height:"86%", display:"flex", flexDirection:"row"}}>
-          <MapComponent />
-          <div style={{width:"50%", height:"100%",display:"flex", flexDirection:"column"}}>
-            <div style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
-                <AddEmployees/>
-            </div>
-            {configReady && (
-              <div style={{display:"flex", flexDirection:"column", height:"71%", gap:"10px"}}>
-                {baselineFeatures?.length && (
-                  <>
-                    <div style={{width:"97%", marginInline:"auto", backgroundColor:"#eaeaeb", outline:"1px solid #CCCDD5", marginBottom:"4px", marginTop:"2px", borderRadius: "var(--root-border-radius)",boxShadow: "var(--optimal-shadow)",}}>
-                      <div style={{textAlign:"center", fontSize:"20px", padding:"5px"}}>Baseline Sites</div>
-                    </div>
-                    <div style={{display:"flex", flexDirection:"column", overflow:"auto", minHeight:"20%", maxheight:"50%", width:"98%"}}>
-                      <BaseFeatureList />              
-                    </div>
-                  </>
-                )}
-                {compareFeatures?.length  && nameField !== null && (
-                  <>
-                    <div style={{width:"97%", marginInline:"auto", backgroundColor:"#eaeaeb", outline:"1px solid #CCCDD5", marginBottom:"4px", marginTop:"2px", borderRadius: "var(--root-border-radius)",boxShadow: "var(--optimal-shadow)",}}>
-                      <div style={{textAlign:"center", fontSize:"20px", padding:"5px"}}>Comparison Sites</div>
-                    </div>
-                    <div style={{display:"flex", flexDirection:"column", overflow:"auto", minHeight:"20%", maxheight:"40%"}}>
-                      <CompFeatureList />
-                    </div>
-                  </>
-                )}
-              </div>
-
-            )}
-          </div>
-        </div>
+    <div style={{width:"100%", height:"100%",display:"flex", flexDirection:"column"}}>
+      <div style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
+        <CalciteBlock
+          heading="Add Destination Sites"
+          collapsible
+          expanded
+          icon-start="3d-building"
+        >
+          <AddSites/>
+        </CalciteBlock>
+      </div>
+      <div style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
+        <CalciteBlock
+          heading="Add Origin Sites"
+          collapsible
+          expanded
+          icon-start="3d-building"
+        >
+          <AddEmployees/> 
+        </CalciteBlock>
+      </div>
     </div>
   );
 };

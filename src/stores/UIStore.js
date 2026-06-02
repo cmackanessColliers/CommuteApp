@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 const initialState = {
   siteFileName: null,
   employeeFileName: null,
+  configReady: false,
 };
 
 const useUIStore = create(
@@ -14,6 +15,7 @@ const useUIStore = create(
         set({ siteFileName });
       },
       setEmployeeFileName: (employeeFileName) => set({ employeeFileName }),
+      setConfigReady: () => set({ configReady: true }),
       reset: () =>
         set({
           ...initialState,

@@ -7,6 +7,7 @@ import indexedDBStorage from "./indexedStorage.js";
 import useUIStore from "./UIStore.js";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import Graphic from "@arcgis/core/Graphic";
+import SetBuildingField from "../components/Configure/CSVHandling/SetBuildingField.jsx";
 
 const nonPersistedKeys = [
   "map",
@@ -27,6 +28,9 @@ const nonPersistedKeys = [
   "fieldMappingRole",
   "fieldMappingResolver",
   "fieldMappingData",
+  "nameField",
+  "buildingField",
+  "keyFeature"
 ];
 
 const featureLayerStateKeys = [
@@ -69,6 +73,9 @@ const initialState = {
   mapInteraction: null,
   mapAvailable: false,
   baselineFeatures: null,
+  nameField: null,
+  buildingField: null,
+  keyFeature: null,
   baselineLayer: null,
   compareFeatures: null,
   layer: null,
@@ -95,12 +102,95 @@ const useAppStateStore = create(
       },
       setMapAvailable: (available) => set({ mapAvailable: available }),
       setMapInteraction: (interaction) => set({ mapInteraction: interaction }),
-      setLayer: (layer) => {set({ layer: layer });},
-      setRouteLayer: (routeLayer) => {set({ routeLayer: routeLayer });},
-      setTradeAreaLayer: (TradeAreaLayer) => {set({ TradeAreaLayer: TradeAreaLayer });},
       setCompareFeatures: (coordsList) => set({compareFeatures: coordsList}),
       setBaselineFeatures: (baseline) => set({baselineFeatures: baseline}),
-      setBaselineLayer: (baseLayer) => set({baselineLayer: baseLayer}),
+      setNameField: (nameField) => set({nameField: nameField}),
+      setBuildingField: (buildingField) => set({buildingField: buildingField}),
+      setKeyFeature: (keyFeature) => set({keyFeature: keyFeature}),
+      setLayer: (layer) => {
+        const loadLayer = async (layer) => {
+          await layer?.load();
+          return layer;
+        };
+        if (loadLayer === undefined) return null;
+        loadLayer(layer).then((loadedLayer) => {
+          set((state) => {
+            const { map, setCompareFeatures } = get();
+            const updatedValue = handleLayerSwapping(
+              "Employee",
+              "layer",
+              state,
+              loadedLayer,
+            );
+            if (loadedLayer) {
+              const featurePromises = loadedLayer.queryFeatures().then((result) => {
+                console.log("comparison Features", result)
+                setCompareFeatures(result.features)
+              })          
+            }
+            return updatedValue;
+          });
+        });
+      },
+      setRouteLayer: (layer) => {
+        const loadLayer = async (layer) => {
+          await layer?.load();
+          return layer;
+        };
+        if (loadLayer === undefined) return null;
+        loadLayer(layer).then((loadedLayer) => {
+          set((state) => {
+            const updatedValue = handleLayerSwapping(
+              "Route",
+              "routeLayer",
+              state,
+              loadedLayer,
+            );
+            return updatedValue;
+          });
+        });
+      },
+      setTradeAreaLayer:  (layer) => {
+        const loadLayer = async (layer) => {
+          await layer?.load();
+          return layer;
+        };
+        if (loadLayer === undefined) return null;
+        loadLayer(layer).then((loadedLayer) => {
+          set((state) => {
+            const updatedValue = handleLayerSwapping(
+              "TradeArea",
+              "tradeAreaLayer",
+              state,
+              loadedLayer,
+            );
+            return updatedValue;
+          });
+        });
+      },
+      setBaselineLayer:  (layer) => {
+        const loadLayer = async (layer) => {
+          await layer?.load();
+          return layer;
+        };
+        if (loadLayer === undefined) return null;
+        loadLayer(layer).then((loadedLayer) => {
+          set((state) => {
+          const { map, setBaselineFeatures } = get();
+            const updatedValue = handleLayerSwapping(
+              "Baseline",
+              "baselineLayer",
+              state,
+              loadedLayer,
+            );
+              const featurePromises = loadedLayer.queryFeatures().then((result) => {
+                console.log("baseline Features", result)
+                setBaselineFeatures(result.features)
+              }) 
+            return updatedValue;
+          });
+        });
+      },
       setEmployeeCountField: (field) => set({ employeeCountField: field }),
       setFieldMappingDialogVisible: (visible, role = null) => {
         console.log(

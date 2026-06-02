@@ -18,6 +18,7 @@ function CompFeatureList() {
   const compareFeatures = useAppStateStore((state) => state.compareFeatures);
   const routeLayer = useAppStateStore((state) => state.routeLayer)
   const map = useAppStateStore((state) => state.map)
+  const nameField = useAppStateStore((state) => state.nameField);
   const [renamingIndex, setRenamingIndex] = useState(null);
   const [openIndex, setOpenIndex] = useState(null);
   const [renameValue, setRenameValue] = useState("");
@@ -111,7 +112,7 @@ function CompFeatureList() {
             <div style={{display:"flex", flexDirection:"row", justifyContent:"space-between"}}>  
               <div style={{width:"60", display:"flex", flexDirection:"column"}}>
                 {renamingIndex !== index && (
-                  <div style={{width:"90%", fontSize:"15px", fontWeight:"bold"}}>{feature.attributes.name}</div>
+                  <div style={{width:"90%", fontSize:"15px", fontWeight:"bold"}}>{feature.attributes[nameField]}</div>
                 )}
                 {renamingIndex === index && (
                   <div style={{display:"flex", flexDirection:"row", gap:"2px"}}>
@@ -136,7 +137,6 @@ function CompFeatureList() {
                       <table>
                         <thead>
                           <tr>
-                            <th style={{outline:"1px solid #CCCDD5", padding:"3px", fontSize:"12px"}}>Location</th>
                             <th style={{outline:"1px solid #CCCDD5", padding:"3px", fontSize:"12px"}}>Candidate Site</th>
                             <th style={{outline:"1px solid #CCCDD5", padding:"3px", fontSize:"12px"}}>Duration</th>
                             <th style={{outline:"1px solid #CCCDD5", padding:"3px", fontSize:"12px"}}>Distance</th>
@@ -148,7 +148,6 @@ function CompFeatureList() {
                             .filter((routeFeature) => routeFeature?.attributes?.routedSite === feature?.attributes?.objectid)
                             .map((routeFeature, i) => (
                               <tr key={i}>
-                                <td style={{outline:"1px solid #CCCDD5", paddingInline:"8px", padding:"3px", fontSize:"12px", textAlign:"center"}}>{feature?.attributes?.name}</td>
                                 <td style={{outline:"1px solid #CCCDD5", paddingInline:"8px", padding:"3px",  fontSize:"12px", textAlign:"center"}}>{routeFeature?.attributes?.candidateSite}</td>
                                 <td style={{outline:"1px solid #CCCDD5", paddingInline:"8px", padding:"3px",  fontSize:"13px", textAlign:"center"}}>{routeFeature?.attributes?.duration}</td>
                                 <td style={{outline:"1px solid #CCCDD5", paddingInline:"8px", padding:"3px",  fontSize:"13px", textAlign:"center"}}>{routeFeature?.attributes?.distance}</td>

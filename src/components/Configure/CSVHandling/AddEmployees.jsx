@@ -12,6 +12,7 @@ import {
 import useAppStateStore from "../../../stores/AppStateStore";
 import PropTypes from "prop-types";
 import useUIStore from "../../../stores/UIStore";
+import SetNameField from "./SetNameField";
 const CSVContent = lazy(() => import("./CSVContent"));
 const SetEmployeeCountField = lazy(() => import("./SetEmployeeCount"));
 
@@ -27,6 +28,7 @@ function AddEmployees({ disabled = false }) {
 
   return (
     <>
+    {layer && (
       <CalciteTooltip
         referenceElement="useEmployeeInfo"
         overlayPositioning="fixed"
@@ -35,6 +37,7 @@ function AddEmployees({ disabled = false }) {
       >
         <span>If your data has more than 1 employee per location<br/>specify the field that holds the employee count</span>
       </CalciteTooltip>
+    )}
       <CalciteList>
         <CalciteListItem>          
           <Suspense fallback={<CalciteLoader />}>
@@ -45,15 +48,24 @@ function AddEmployees({ disabled = false }) {
             </div>
           </Suspense>
         </CalciteListItem>
-        <CalciteListItem>
-          <div slot="content" style={{marginInline:'auto'}}>
-            <CalciteLabel layout="inline" style={{marginInline:"auto"}}>
-                Use Employee Count Field
-              <CalciteCheckbox style={{ boxShadow: "var(--optimal-shadow)"}} checked={useEmployeeCount} onCalciteCheckboxChange={() => {setUseEmployeeCount(!useEmployeeCount)}}/>
-              <CalciteIcon icon="information" scale="s" id="useEmployeeInfo" />
-            </CalciteLabel>
-          </div>
-        </CalciteListItem>
+        {layer && (
+          <>
+            <CalciteListItem>
+              <div slot="content">
+                <SetNameField />
+              </div>
+            </CalciteListItem>
+            <CalciteListItem>
+              <div slot="content" style={{marginInline:'auto'}}>
+                <CalciteLabel layout="inline" style={{marginInline:"auto"}}>
+                    Use Employee Count Field
+                  <CalciteCheckbox style={{ boxShadow: "var(--optimal-shadow)"}} checked={useEmployeeCount} onCalciteCheckboxChange={() => {setUseEmployeeCount(!useEmployeeCount)}}/>
+                  <CalciteIcon icon="information" scale="s" id="useEmployeeInfo" />
+                </CalciteLabel>
+              </div>
+            </CalciteListItem>
+          </>
+        )}
             {useEmployeeCount && layer && (
               <>
                 <CalciteTooltip

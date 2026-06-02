@@ -68,7 +68,7 @@ function CSVContent({ role }) {
     [layer]
   );
 
-  async function addCSVLayer(file, map, role, baselineLayer, loadingHandler) {
+  async function addCSVLayer(file, map, role, layer, loadingHandler) {
     const config = ROLE_CONFIG[role];
     if (!config) {
       throw new Error(`Role not recognized: ${role}`);
@@ -198,7 +198,7 @@ function CSVContent({ role }) {
                 e.target.files[0],
                 map,
                 role,
-                baselineLayer,
+                layer,
                 setLoadingCsv,
               );
             }}
