@@ -28,15 +28,11 @@ function SetEmployeeCountField() {
           <CalciteCombobox
             placeholder="Optional - Select Employee Count Field"
             overlayPositioning="fixed"
-            // value={employeeCountField}
+            value={employeeCountField}
             scale="s"
             selectionMode="single"
             onCalciteComboboxChange={(e) => {
               console.log(e.target.value);
-              // dispatcherSiteSelection({
-              //   type: "SET_EMPLOYEE_COUNT_FIELD",
-              //   payload: e.target.value,
-              // });
               setEmployeeCountField(e.target.value);
             }}
           >

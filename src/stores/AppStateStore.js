@@ -30,7 +30,11 @@ const nonPersistedKeys = [
   "fieldMappingData",
   "nameField",
   "buildingField",
-  "keyFeature"
+  "keyFeature",
+  "useTradeArea",
+  "configReady",
+  "commuteGraphics",
+  "empCommuteLayer"
 ];
 
 const featureLayerStateKeys = [
@@ -56,7 +60,8 @@ function handleLayerSwapping(role, key, state, layer) {
         (mapLayer) => mapLayer.title === currentLayer.title,
       );
       if (layerToRemove) {
-        map.remove(layerToRemove);
+        console.log('Removing Layer:', layerToRemove)
+        map?.remove(layerToRemove);
       }
     }
     // If a new layer is provided, it will be added by the calling context.
@@ -69,6 +74,7 @@ function handleLayerSwapping(role, key, state, layer) {
 
 const initialState = {
   hasHydrated: false, // tracks if persist middleware has rehydrated
+  configReady: false,
   map: null,
   mapInteraction: null,
   mapAvailable: false,
@@ -80,7 +86,10 @@ const initialState = {
   compareFeatures: null,
   layer: null,
   tradeAreaLayer: null,
+  useTradeArea: false,
   routeLayer: null,
+  commuteGraphics: null,
+  empCommuteLayer: null,
   portal: null,
   portalItems: null,
   searchString: "",
@@ -100,6 +109,7 @@ const useAppStateStore = create(
       setMap: (map) => {
         set({ map: map });
       },
+      setConfigReady: (bool) => set({ configReady: bool }),
       setMapAvailable: (available) => set({ mapAvailable: available }),
       setMapInteraction: (interaction) => set({ mapInteraction: interaction }),
       setCompareFeatures: (coordsList) => set({compareFeatures: coordsList}),
@@ -107,6 +117,25 @@ const useAppStateStore = create(
       setNameField: (nameField) => set({nameField: nameField}),
       setBuildingField: (buildingField) => set({buildingField: buildingField}),
       setKeyFeature: (keyFeature) => set({keyFeature: keyFeature}),
+      setCommuteGraphics: (graphics) => set({commuteGraphics: graphics}),
+      setEmpCommuteLayer: (layer) => {
+        const loadLayer = async (layer) => {
+          await layer?.load();
+          return layer;
+        };
+        if (loadLayer === undefined) return null;
+        loadLayer(layer).then((loadedLayer) => {
+          set((state) => {
+            const updatedValue = handleLayerSwapping(
+              "EmpCommute",
+              "empCommuteLayer",
+              state,
+              loadedLayer,
+            );
+            return updatedValue;
+          });
+        });
+      },
       setLayer: (layer) => {
         const loadLayer = async (layer) => {
           await layer?.load();
@@ -123,7 +152,7 @@ const useAppStateStore = create(
               loadedLayer,
             );
             if (loadedLayer) {
-              const featurePromises = loadedLayer.queryFeatures().then((result) => {
+              loadedLayer.queryFeatures().then((result) => {
                 console.log("comparison Features", result)
                 setCompareFeatures(result.features)
               })          
@@ -168,7 +197,8 @@ const useAppStateStore = create(
           });
         });
       },
-      setBaselineLayer:  (layer) => {
+      setUseTradeArea: (use) => set({ useTradeArea: use }),
+      setBaselineLayer: (layer) => {
         const loadLayer = async (layer) => {
           await layer?.load();
           return layer;
@@ -178,15 +208,17 @@ const useAppStateStore = create(
           set((state) => {
           const { map, setBaselineFeatures } = get();
             const updatedValue = handleLayerSwapping(
-              "Baseline",
+              "Site",
               "baselineLayer",
               state,
               loadedLayer,
             );
-              const featurePromises = loadedLayer.queryFeatures().then((result) => {
+            if (loadedLayer) {
+              loadedLayer.queryFeatures().then((result) => {
                 console.log("baseline Features", result)
                 setBaselineFeatures(result.features)
               }) 
+            }
             return updatedValue;
           });
         });

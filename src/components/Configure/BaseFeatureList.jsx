@@ -15,7 +15,9 @@ function CompFeatureList() {
   const baselineLayer = useAppStateStore((state) => state.baselineLayer);
   const setBaselineFeatures = useAppStateStore((state) => state.setBaselineFeatures);
   const baselineFeatures = useAppStateStore((state) => state.baselineFeatures);
+  const buildingField = useAppStateStore((state) => state.buildingField)
   const map = useAppStateStore((state) => state.map);
+  const commuteGraphics = useAppStateStore((state) => state.commuteGraphics);
   const [renamingIndex, setRenamingIndex] = useState(null);
   const [openIndex, setOpenIndex] = useState(null);
   const [renameValue, setRenameValue] = useState("");
@@ -99,7 +101,7 @@ function CompFeatureList() {
         >
           <div style={{display:"flex", flexDirection:"row", justifyContent:"space-between"}}>  
             {renamingIndex !== index && (
-              <div style={{width:"70%", fontSize:"15px", fontWeight:"bold"}}>{feature.attributes.name}</div>
+              <div style={{width:"70%", fontSize:"15px", fontWeight:"bold"}}>{feature.attributes[buildingField]}</div>
             )}
             {renamingIndex === index && (
               <div style={{display:"flex", flexDirection:"row", gap:"2px"}}>
@@ -141,6 +143,39 @@ function CompFeatureList() {
               </CalciteDropdownItem>
             </CalciteDropdown>
           </div>
+          {commuteGraphics && (
+            <div style={{marginTop:"5px"}}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{"<10 mins"}</th>
+                    <th>{"10-20 mins"}</th>
+                    <th>{"20-30 mins"}</th>
+                    <th>{"30-40 mins"}</th>
+                    <th>{"40-50 mins"}</th>
+                    <th>{"50-60 mins"}</th>
+                    <th>{">1hr mins"}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(commuteGraphics)
+                    .filter(([_, graphic]) => (feature.attributes[buildingField] === graphic[buildingField]))
+                    .map(([key,graphic]) => (
+                      <tr key={key}>
+                        <td>{graphic.CommuteTime_Under10}</td>
+                        <td>{graphic.CommuteTime_10_20}</td>
+                        <td>{graphic.CommuteTime_20_30}</td>
+                        <td>{graphic.CommuteTime_30_40}</td>
+                        <td>{graphic.CommuteTime_40_50}</td>
+                        <td>{graphic.CommuteTime_50_60}</td>
+                        <td>{graphic.CommuteTime_60Plus}</td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          )}
         </CalciteCard>
       ))}
     </CalciteCardGroup>

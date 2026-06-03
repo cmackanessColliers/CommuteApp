@@ -44,7 +44,7 @@ function SelectBaselineSite() {
                   <CalciteIcon icon="information" scale="s" id="useBaselineInfo"/>
               </CalciteLabel>
               {useKey && (
-                <CalciteLabel>
+                <CalciteLabel scale="s">
                   Select Baseline Site (Optional)
                   <CalciteCombobox
                     disabled={buildingField === null}
@@ -53,8 +53,8 @@ function SelectBaselineSite() {
                     scale="s"
                     selectionMode="single"
                     value={
-                      baselineFeature !== undefined && baselineFeature !== null
-                        ? baselineFeature?.map(
+                      keyFeature !== undefined && keyFeature !== null
+                        ? keyFeature?.map(
                             (feature) =>
                               feature?.attributes?.[
                                 feature?.layer?.objectIdField || objectIdField

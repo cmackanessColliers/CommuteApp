@@ -1,4 +1,7 @@
 import { 
+  CalciteBlock,
+  CalciteList,
+  CalciteListItem,
   CalciteDropdown,
   CalciteDropdownItem,
   CalciteLabel,
@@ -21,8 +24,9 @@ import { getTravelTimeAreas, getRoutes } from "../../helpers/travel_time_helpers
 import AddEmployees from "./CSVHandling/AddEmployees";
 import AddSites from "./CSVHandling/AddSites";
 import { generateCommuteAnalysis } from "../../helpers/CommuteAnalysis";
+import ConfigureTradeArea from "./CSVHandling/ConfigureTradeArea";
 
-function ReportContent() {
+function ConfigBlock() {
   const map = useAppStateStore((state) => state.map)
   const setLayer = useAppStateStore((state) => state.setLayer)
   const layer = useAppStateStore((state) => state.layer) 
@@ -37,82 +41,20 @@ function ReportContent() {
   const routeLayer = useAppStateStore((state) => state.routeLayer)
   const tradeAreaLayer = useAppStateStore((state) => state.tradeAreaLayer)
   const setTradeAreaLayer = useAppStateStore((state) => state.setTradeAreaLayer)
-  const siteFileName = useUIStore((state) => state.siteFileName);
-  const employeeFileName = useUIStore((state) => state.employeeFileName);
+  const setConfigReady = useAppStateStore((state) => state.setConfigReady);
+  const setCommuteGraphics = useAppStateStore((state) => state.setCommuteGraphics)
+  const setEmpCommuteLayer = useAppStateStore((state) => state.setEmpCommuteLayer)
+  const buildingField = useAppStateStore((state) => state.buildingField);
   const employeeCountField = useAppStateStore((state) => state.employeeCountField);
-  const {
-    setSiteFileName,
-    setEmployeeFileName,
-  } = useUIStore.getState();
   const formattedTime = new Date().toTimeString().slice(0, 5)
   const [time, setTime] = useState(formattedTime)
   const [pointActive, setPointActive] = useState(false);
-  const [configOpen, setConfigOpen] = useState(false)
+  const [DestinationOpen, setDestinationOpen] = useState(true)
   const [radius, setRadius] = useState(null)
   const [travelDuration, setTravelDuration] = useState(20)
   const [areaType, setAreaType] = useState("isochrone")
   const [isLoading, setIsLoading] = useState(false)
-  const [pointIndex, setPointIndex] = useState(1)
-  const searchRef = useRef(null); 
-  const baseSearchRef = useRef(null); 
-  
-  useEffect(() => {
-    if (baselineFeatures?.length) {
-      setTimeout(() => {
-        handleCreateTradeAreas();
-      }, 2000);
-    }
-  }, [baselineFeatures])
 
-  useEffect(() => {
-    if (baselineFeatures?.length && compareFeatures?.length) {
-      setTimeout(() => {
-        // handleCreateRoutes();
-        handleCommuteAnalysis()
-      }, 2000);
-    }
-  }, [baselineFeatures, compareFeatures])
-
-  async function startDrawing(condition) {
-    if (!map?.view) return;
-    // ✅ Change cursor
-    map.view.container.style.cursor = "crosshair";
-    // ✅ Listen for ONE click only
-    map.view.once("click", (event) => {
-      const { latitude, longitude, x, y } = event.mapPoint;
-      const feature = new Graphic({
-        attributes: {
-          name: `${condition} Point ${pointIndex}`,
-          latitude,
-          longitude,
-          x,
-          y,
-        },
-        geometry: event.mapPoint,
-      });
-      setPointActive(false)
-      let layer 
-      if (condition === "compare") {
-        layer = map.map.layers.find(
-          (l) => l.title === "Comparison Locations"
-        );
-      } if (condition ==="baseline") {
-        layer = map.map.layers.find(
-          (l) => l.title === "Baseline Locations"
-        );
-      }
-      if (!layer) {
-        // console.log("feature", feature)
-        CreateFeatureLayer(feature, condition);
-      } else {
-        updateLayer(map, feature, layer, condition);
-      }
-      setPointIndex(pointIndex + 1)
-      // ✅ Reset cursor
-      map.view.container.style.cursor = "default";
-    });
-
-  }
 
   function handleCreateRoutes() {
     setIsLoading(true);
@@ -185,9 +127,12 @@ function ReportContent() {
           null,
           employeeCountField,
           nameField || "name",
-        ).then((CommuteGraphics) => {
-        console.log("CommuteGraphics", CommuteGraphics)
-        setIsLoading(false);
+        ).then(([Facilitygraphics, EmpGraphics]) => {
+          console.log("CommuteGraphics", Facilitygraphics)
+          console.log("EmpCommuteGraphics", EmpGraphics)
+          buildEmpGraphicsLayer(EmpGraphics)
+          setCommuteGraphics(Facilitygraphics)
+          setIsLoading(false);
       });
     } catch (err) {
       setIsLoading(false);
@@ -195,253 +140,86 @@ function ReportContent() {
     }
   }
 
-  function handleCreateTradeAreas() {
-    setIsLoading(true);
-    try {
-      // console.log("starting Create Trade Area")
-      // Call the helper function to get travel time areas
-      const resultsLayer = map?.map?.layers?.find((l) =>
-        l?.title?.includes("Trade Areas"),
-      );
-      if (resultsLayer){
-        map?.map?.remove(resultsLayer)
-      };
-      // console.log(
-      //   "areaType", areaType,
-      //   "baselineFeatures", baselineFeatures,
-      //   "TravelMode", "driving",
-      //   "travelDuration", travelDuration*60,
-      //   "radius",radius,)
-      if (
-        (travelDuration < 1 && areaType === "isochrone") ||
-        (radius < 1 && areaType === "radial")
-      ) {
-        setIsLoading(false);
-        return;
+  async function buildEmpGraphicsLayer(graphics) {
+    const empFields = [
+      ...layer.fields, // reuse all existing fields
+      {
+        name: "BLDSite",
+        alias: "Building Site",
+        type: "string",
+      },
+      {
+        name: "travelTime",
+        alias: "Travel Time",
+        type: "double",
+      },
+      {
+        name: "travelDist",
+        alias: "Travel Distance",
+        type: "double",
       }
-      // console.log("Getting Travel Time");
-      getTravelTimeAreas(
-        areaType,
-        baselineFeatures,
-        "driving",
-        travelDuration*60,
-        radius,
-        null,
-        resultsLayer,
-      ).then((tradeAreasLayer) => {
-        // console.log("tradeAreasLayer", tradeAreasLayer)
-        map?.map?.layers?.add(tradeAreasLayer)
-        setTradeAreaLayer(tradeAreasLayer)
-        extentGetAndGo(tradeAreasLayer)
-        if (
-          resultsLayer &&
-          resultsLayer.title === `Trade Areas (${areaType})` &&
-          areaType !== "h3"
-        ) {
-          resultsLayer.refresh();
-          setIsLoading(false);
-          return;
-        }
-        map?.map?.remove(resultsLayer);
-        setIsLoading(false);
-      });
-    } catch (err) {
-      setIsLoading(false);
-      throw new Error("Problem generating trade area: ", err);
-    }
-  }
- 
-  async function extentGetAndGo(layer) {
-    await layer.when()
+    ];
     
-    const extent = await layer.queryExtent();
-
-    if (extent?.extent) {
-      map.view.goTo(extent.extent);
-    }
-  }
-
-  async function CreateFeatureLayer(features, condition) {
-    if (condition === "compare") {
-      const CompareLayer = new FeatureLayer({
-        title:"Comparison Locations",
-        source: [features],
-        spatialReference: {wkid:4326},
-        geometryType: "point",
-        objectIdField: "objectid",
-        popupEnabled: true,
-        fields: fieldList,
-        popupTemplate: popupTemplate,
-        renderer: compRenderer
-      })
-      setSiteFileName("Comparison Location")
-      // console.log("CompareLayer",CompareLayer)
-      map?.map?.layers?.add(CompareLayer)
-      setLayer(CompareLayer)
-      CompareLayer
-          ?.queryFeatures()
-          .then((results) => {
-            // console.log("resultFeatures", results?.features)
-            setCompareFeatures(results?.features)
-          });
-    }
-    if (condition === "baseline") {
-      const BaselineLayer = new FeatureLayer({
-        title:"Baseline Locations",
-        source: [features],
-        spatialReference: {wkid:4326},
-        geometryType: "point",
-        objectIdField: "objectid",
-        popupEnabled: true,
-        fields: fieldList,
-        popupTemplate: popupTemplate,
-        renderer: baseRenderer
-      })
-      setSiteFileName("Baseline Location")
-      // console.log("BaselineLayer",BaselineLayer)
-      map?.map?.layers?.add(BaselineLayer)
-      setBaselineLayer(BaselineLayer)
-      BaselineLayer
-        ?.queryFeatures()
-        .then((results) => {
-          // console.log("resultFeatures", results?.features)
-          setBaselineFeatures(results?.features)
-          if (!areaType) {
-            setAreaType("isochrone")
-          }
-          if (!travelDuration) {
-            setTravelDuration(20)
-          }
-        });
-    }
-  }
-
-  useEffect(() => {
-    compSearchControl()
-    baseSearchControl()
-  }, [map]);
-
-  function baseSearchControl() {
-    const baseSearchEl = baseSearchRef.current;
-    if (!baseSearchEl) return;
-    const handleSelect = (e) => {
-      const result = e.detail.result;
-      const geom = result?.feature?.geometry;
-      if (geom) {
-        // console.log("Result:",result)
-        const feature = new Graphic({
-          attributes: {
-            name:result.name,
-            latitude: geom.latitude,
-            longitude: geom.longitude,
-            x: geom.x,
-            y: geom.y,
-          },
-          geometry: geom
-        })
-        let layer = map.map.layers.find(
-          (l) => l.title === "Baseline Locations"
-        );
-        // console.log(layer)
-        if (!layer) {
-          CreateFeatureLayer(feature, "baseline")
-        } else {
-          // console.log("layer Exists")
-          updateLayer(map, feature, layer, "baseline");
-        }
-      }
-    };
-    baseSearchEl.addEventListener("arcgisSelectResult", handleSelect);
-    return () => {
-      baseSearchEl.removeEventListener("arcgisSelectResult", handleSelect);
-    };
-  }
-
-  function compSearchControl() {
-    const searchEl = searchRef.current;
-    if (!searchEl) return;
-    const handleSelect = (e) => {
-      const result = e.detail.result;
-      const geom = result?.feature?.geometry;
-      if (geom) {
-        // console.log("Result:",result)
-        const feature = new Graphic({
-          attributes: {
-            name:result.name,
-            latitude: geom.latitude,
-            longitude: geom.longitude,
-            x: geom.x,
-            y: geom.y,
-          },
-          geometry: geom
-        })
-        let layer = map.map.layers.find((l) => l.title === "Comparison Locations");
-        // console.log(layer)
-        if (!layer) {
-          CreateFeatureLayer(feature, "compare")
-        } else {
-          // console.log("layer Exists")
-          updateLayer(map, feature, layer, "compare");
-        }
-      }
-    };
-    searchEl.addEventListener("arcgisSelectResult", handleSelect);
-    return () => {
-      searchEl.removeEventListener("arcgisSelectResult", handleSelect);
-    };
-  }
-  
-  async function updateLayer(map, feature, layer, condition) {
-    // ✅ Append features instead of recreating layer
-    await layer.applyEdits({
-      addFeatures: [feature]
+    const EmpGraphicsLayer = new FeatureLayer({
+      title: "Employee Commute Graphics",
+      source: graphics,
+      objectIdField: "objectid",
+      fields: empFields,
+      geometryType: layer.geometryType || "point",
+      spatialReference: layer.spatialReference,
     });
-    layer.refresh()    
-    if (condition === "compare") {
-      setLayer(layer)
-    }
-    if (condition === "baseline") {
-      setBaselineLayer(layer)
-    }
-    layer
-        ?.queryFeatures()
-        .then((results) => {
-          // console.log("resultFeatures", results?.features)
-          if (condition === "compare") {
-            setCompareFeatures(results?.features)
-          }
-          if (condition === "baseline") {
-            setBaselineFeatures(results?.features)
-          }
-        });
-    // console.log("layer",layer)
+    // map?.map?.layers?.add(EmpGraphicsLayer)
+    setEmpCommuteLayer(EmpGraphicsLayer)
+    console.log("EmpGraphicsLayer", EmpGraphicsLayer)
   }
-
 
   return (
-    <div style={{width:"100%", height:"100%",display:"flex", flexDirection:"column"}}>
-      <div style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
-        <CalciteBlock
-          heading="Add Destination Sites"
-          collapsible
-          expanded
-          icon-start="3d-building"
-        >
-          <AddSites/>
-        </CalciteBlock>
+    <>
+      <CalciteList style={{width:"100%", height:"100%",display:"flex", flexDirection:"column", overflowY:"auto", padding:"10px", boxSizing:"border-box"}}>
+        <CalciteListItem style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
+          <CalciteBlock
+            slot="content"
+            heading="Add Destination Sites"
+            collapsible
+            expanded={DestinationOpen}
+            icon-start="3d-building"
+          >
+            <AddSites/>
+            {baselineLayer && buildingField && (
+              <div>
+                <CalciteButton
+                  width="full"
+                  onClick={() => setDestinationOpen(!DestinationOpen)}
+                >
+                  Next
+                </CalciteButton>
+              </div>
+            )}
+          </CalciteBlock>
+        </CalciteListItem>
+        <CalciteListItem style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
+          <CalciteBlock
+            slot="content"
+            heading="Add Origin Sites"
+            collapsible
+            expanded={!DestinationOpen}
+            icon-start="3d-building"
+          >
+            <AddEmployees/> 
+          </CalciteBlock>
+        </CalciteListItem>
+      </CalciteList>
+      <div slot="footer" style={{marginTop:"5px", marginBottom:"5px", marginInline:"auto"}}>
+        <CalciteButton 
+          onClick={() => {
+            handleCommuteAnalysis()
+            setConfigReady(true)
+          }}
+          disabled={baselineLayer === null || layer === null || nameField === null || buildingField === null}
+        >Proceed To Analysis</CalciteButton>
       </div>
-      <div style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
-        <CalciteBlock
-          heading="Add Origin Sites"
-          collapsible
-          expanded
-          icon-start="3d-building"
-        >
-          <AddEmployees/> 
-        </CalciteBlock>
-      </div>
-    </div>
+    </>
   );
 };
 
-export default ReportContent;
+export default ConfigBlock;

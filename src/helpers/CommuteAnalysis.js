@@ -73,6 +73,15 @@ export async function generateCommuteAnalysis(
   employeeCountField,
   nameField,
 ) {
+  console.log(
+    "BldSites", BldSites,
+    "EMPSitesLayer", EMPSitesLayer,
+    "travelMode", travelMode,
+    "baselineFeature", baselineFeature,
+    "employeeCountField", employeeCountField,
+    "nameField", nameField,
+  )
+
   await initializeArcGisModules();
   const CommuteAnalysisAPI = new URL(
     "https://api.traveltimeapp.com/v4/time-filter"
@@ -250,14 +259,18 @@ export async function generateCommuteAnalysis(
     BLDsiteLookup[sourceFeature].attributes["AverageCommuteDist"] = Math.round(AvgDist * 100) / 100;
     BLDsiteLookup[sourceFeature].attributes["CommuteTime_Under30"] = Time0_10 + Time10_20 + Time20_30;
     BLDsiteLookup[sourceFeature].attributes["CommutePct_Under30"] = (((Time0_10 + Time10_20 + Time20_30)/numEmployees)*100).toFixed(2);
-
     const OID = sourceFeature.split("_")[1];
     const outAttributes = {};
+    const sourceGraphic = BldSites.find((feature) => String(feature.attributes.objectid) === String(OID)).attributes
+    Object.entries(sourceGraphic).map(([field,value]) => {
+      BLDsiteLookup[sourceFeature].attributes[field] = value
+    })
     allIsoGraphics[OID] = BLDsiteLookup[sourceFeature].attributes;
     return outAttributes;
   };
 
 
+  const EmpCommuteGraphics = []
   for (let i = 0; i < BLDSiteCoordList.length; i += 10) {
     const batch = BLDSiteCoordList.slice(i, i + 10);
     const ApiCallArray = [];
@@ -296,22 +309,50 @@ export async function generateCommuteAnalysis(
     const batchGraphics = jsonOut?.results?.map((feature) =>
       featureBuilder(feature)
     );
+    console.log("JsonOut", jsonOut)
+    
+    jsonOut?.results?.forEach((feature) => {
+      const BLD_ID = feature.search_id.split(" ")[0].replace("BLD_", "");
+
+      feature.locations.forEach((empFeature) => {
+        const empSite = empFeature.id.split("_")[1];
+        const sourceFeature = EMPfeatureSet.features.find(
+          (f) => String(f.attributes.objectid) === String(empSite)
+        );
+        if (!sourceFeature) return;
+        // ✅ Clone attributes safely
+        const newAttributes = {
+          ...sourceFeature.attributes,
+          BLDSite: BLD_ID,
+          travelTime: empFeature.properties[0].travel_time / 60,
+          travelDist: empFeature.properties[0].distance / 1609.34,
+        };
+        // ✅ Create a true Graphic
+        const newGraphic = new Graphic({
+          geometry: sourceFeature.geometry,
+          attributes: newAttributes,
+        });
+        EmpCommuteGraphics.push(newGraphic);
+      });
+    });
+
     // allIsoGraphics.push(...batchGraphics);
   }
   for (const graphic in allIsoGraphics) {
     allIsoGraphics[graphic]["CommuteTimeDifference"] =
-      Math.round(
-        (allIsoGraphics[graphic].AverageCommuteTime -
-          baselineSiteStats.AverageCommuteTime) *
-          100
+    Math.round(
+      (allIsoGraphics[graphic].AverageCommuteTime -
+        baselineSiteStats.AverageCommuteTime) *
+        100
       ) / 100;
-    allIsoGraphics[graphic]["CommuteDistDifference"] =
+      allIsoGraphics[graphic]["CommuteDistDifference"] =
       Math.round(
         (allIsoGraphics[graphic].AverageCommuteDist -
           baselineSiteStats.AverageCommuteDist) *
           100
-      ) / 100;
-  }
-  console.log("Commute Graphics", allIsoGraphics)
-  return allIsoGraphics;
+        ) / 100;
+      }
+    // console.log("EmpCommuteGraphics", EmpCommuteGraphics)
+    // console.log("Commute Graphics", allIsoGraphics)
+  return [allIsoGraphics, EmpCommuteGraphics];
 }

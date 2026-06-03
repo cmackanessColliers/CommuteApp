@@ -15,9 +15,9 @@ import {
 import useAppStateStore from "../../../stores/AppStateStore";
 import useUIStore from "../../../stores/UIStore";
 const CSVContent = lazy(() => import("./CSVContent"));
-const AtlasContent = lazy(() => import("./AtlasContent"));
 const SelectBaselineSite = lazy(() => import("./SelectBaselineSite"));
 const SetBuildingField = lazy(() => import("./SetBuildingField"));
+const ConfigureTradeArea = lazy(() => import("./ConfigureTradeArea"));
 
 const ROLE = "Site";
 
@@ -26,32 +26,26 @@ function AddSites() {
   const [dataType, setDataType] = useState("csv")
   return (
     <>
-      <CalciteBlock
-        heading="Add Sites"
-        collapsible
-        expanded
-        // onCalciteBlockClose={() => toggleTuneTradeAreasCollapsed()}
-        description="Add sites via Atlas or CSV"
-        icon-start="3d-building"
-      >
-        <CalciteList>
-          <CalciteListItem>
-            <Suspense fallback={<CalciteLoader />}>
-              <div slot="content">
-                <div style={{width:"90%", marginInline:"auto", paddingTop:"5px"}}>
-                    <CSVContent role={ROLE} />
-                </div>
+      <CalciteList>
+        <CalciteListItem>
+          <Suspense fallback={<CalciteLoader />}>
+            <div slot="content">
+              <div style={{width:"90%", marginInline:"auto", paddingTop:"5px"}}>
+                  <CSVContent role={ROLE} />
               </div>
-            </Suspense>
-          </CalciteListItem>
-            <Suspense fallback={<CalciteLoader />}>
-              <SetBuildingField />
-            </Suspense>
-            <Suspense fallback={<CalciteLoader />}>
-              <SelectBaselineSite/>
-            </Suspense>
-        </CalciteList>
-      </CalciteBlock>
+            </div>
+          </Suspense>
+        </CalciteListItem>
+          <Suspense fallback={<CalciteLoader />}>
+            <SetBuildingField />
+          </Suspense>
+          <Suspense fallback={<CalciteLoader />}>
+            <SelectBaselineSite/>
+          </Suspense>
+          <Suspense fallback={<CalciteLoader />}>
+            <ConfigureTradeArea/>
+          </Suspense>
+      </CalciteList>
     </>
   );
 }

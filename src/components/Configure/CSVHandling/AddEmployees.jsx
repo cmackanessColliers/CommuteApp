@@ -23,8 +23,9 @@ function AddEmployees({ disabled = false }) {
   const layer = useAppStateStore((state) => state.layer);
   const map = useAppStateStore((state) => state.map);
   const employeeFileName = useUIStore((state) => state.employeeFileName);
+  const employeeCountField = useAppStateStore((state) => state.employeeCountField)
   const [dataType, setDataType] = useState("csv")
-  const [useEmployeeCount, setUseEmployeeCount] = useState(false);
+  const [useEmployeeCount, setUseEmployeeCount] = useState(employeeCountField !== null ? true : false);
 
   return (
     <>

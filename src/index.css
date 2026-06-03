@@ -103,7 +103,27 @@ body,
         font-family: 'Open Sans';
       }
 
-      table{ 
+      table { 
+        border-collapse: collapse;
+        border: 1px solid #000759;
+      }
+
+      th {
+        border-collapse: collapse;
+        border: 1px, solid #dedad7;
+        background-color: #f7f7f7;
+        color: #353E59;
+        text-align: center;
+        border-bottom: 1px solid #000759;
+      }
+
+      td {
+        border-collapse: collapse;
+        border: 1px solid #000759;
+        background-color: white;
+        color:#000759;
+        padding: 1px;
+        text-align: center;
         border-collapse: collapse;
       }
 

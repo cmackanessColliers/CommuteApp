@@ -193,23 +193,8 @@ async function initializeArcGisModules() {
 
 async function generateFeaturesFromFileData(file, role) {
   await initializeArcGisModules();
-  // function getFileExtension(supportedFileType) {
-  //   return supportedFileType === "shapefile" ? ".zip" : `.${supportedFileType}`;
-  // }
 
   function getFileType() {
-    //name) {
-    // const SupportedFileTypes = {
-    //   CSV: "csv",
-    //   GeoJson: "geojson",
-    //   Shapefile: "shapefile",
-    //   KML: "kml",
-    //   GPX: "gpx",
-    // };
-
-    // return Object.values(SupportedFileTypes).find((t) =>
-    //   name?.endsWith(getFileExtension(t))
-    // );
     return "csv";
   }
 

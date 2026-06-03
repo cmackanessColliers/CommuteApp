@@ -122,6 +122,7 @@ const MapComponent = () => {
       }
       if (baselineLayer) {
         map?.map?.layers?.addMany([baselineLayer]);
+        layerExtents.push(baselineLayer?.fullExtent);
       }
       if (tradeAreaLayer) {
         const inMapLayer = map?.map?.layers?.find((l) =>

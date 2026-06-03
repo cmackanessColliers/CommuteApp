@@ -25,7 +25,7 @@ const ROLE_CONFIG = {
     setFileNameKey: "setSiteFileName",
     layerSetter: "setBaselineLayer",
     layerGetter: "baselineLayer",
-    wrapInArray: true,
+    wrapInArray: false,
   },
   Employee: {
     fileNameKey: "employeeFileName",
@@ -63,6 +63,7 @@ function CSVContent({ role }) {
     function () {
       if (layer === null || layer === undefined) {
         removeCSVLayer("Employee")
+        removeCSVLayer("Site")
       }
     },
     [layer]
@@ -120,7 +121,7 @@ function CSVContent({ role }) {
   }
 
   async function removeCSVLayer(role) {
-    console.log("Removing CSV Layer");
+    // console.log("Removing CSV Layer");
     const config = ROLE_CONFIG[role];
     if (!config) {
       throw new Error(`Role not recognized: ${role}`);
@@ -189,7 +190,7 @@ function CSVContent({ role }) {
             accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
             onCalciteInputInput={(e) => {
               if (!e.target.value) {
-                console.log("No Files");
+                // console.log("No Files");
                 removeCSVLayer(role);
                 return;
               }
@@ -400,6 +401,16 @@ function FieldMappingContent({ role }) {
                     >
                       {localMapping.latitudeFieldName || "Not detected"}
                     </CalciteButton>
+                      <CalciteDropdownItem
+                        onCalciteDropdownItemSelect={() =>
+                          setLocalMapping((prevMapping) => ({
+                            ...prevMapping,
+                            latitudeFieldName: null,
+                          }))
+                        }
+                      >
+                        None
+                      </CalciteDropdownItem>
                     {localMapping.fields?.map(({ name, alias }, index) => (
                       <CalciteDropdownItem
                         key={index}
@@ -437,6 +448,16 @@ function FieldMappingContent({ role }) {
                     >
                       {localMapping.longitudeFieldName || "Not detected"}
                     </CalciteButton>
+                      <CalciteDropdownItem
+                        onCalciteDropdownItemSelect={() =>
+                          setLocalMapping((prevMapping) => ({
+                            ...prevMapping,
+                            longitudeFieldName: null,
+                          }))
+                        }
+                      >
+                        None
+                      </CalciteDropdownItem>
                     {localMapping.fields?.map(({ name, alias }, index) => (
                       <CalciteDropdownItem
                         key={index}
@@ -480,6 +501,19 @@ function FieldMappingContent({ role }) {
                       {localMapping.addressFields?.["Address"] ||
                         "None detected"}
                     </CalciteButton>
+                      <CalciteDropdownItem
+                        onCalciteDropdownItemSelect={() =>
+                          setLocalMapping((prevMapping) => ({
+                            ...prevMapping,
+                            addressFields: {
+                              ...prevMapping.addressFields,
+                              ["Address"]: null,
+                            },
+                          }))
+                        }
+                      >
+                        None
+                      </CalciteDropdownItem>
                     {localMapping.fields?.map(({ name, alias }, index) => (
                       <CalciteDropdownItem
                         key={index}
@@ -520,6 +554,19 @@ function FieldMappingContent({ role }) {
                     >
                       {localMapping.addressFields?.["City"] || "None detected"}
                     </CalciteButton>
+                      <CalciteDropdownItem
+                        onCalciteDropdownItemSelect={() =>
+                          setLocalMapping((prevMapping) => ({
+                            ...prevMapping,
+                            addressFields: {
+                              ...prevMapping.addressFields,
+                              ["City"]: null,
+                            },
+                          }))
+                        }
+                      >
+                        None
+                      </CalciteDropdownItem>
                     {localMapping.fields?.map(({ name, alias }, index) => (
                       <CalciteDropdownItem
                         key={index}
@@ -560,6 +607,19 @@ function FieldMappingContent({ role }) {
                     >
                       {localMapping.addressFields?.["State"] || "None detected"}
                     </CalciteButton>
+                      <CalciteDropdownItem
+                        onCalciteDropdownItemSelect={() =>
+                          setLocalMapping((prevMapping) => ({
+                            ...prevMapping,
+                            addressFields: {
+                              ...prevMapping.addressFields,
+                              ["State"]: null,
+                            },
+                          }))
+                        }
+                      >
+                        None
+                      </CalciteDropdownItem>
                     {localMapping.fields?.map(({ name, alias }, index) => (
                       <CalciteDropdownItem
                         key={index}
@@ -600,6 +660,19 @@ function FieldMappingContent({ role }) {
                     >
                       {localMapping.addressFields?.["Zip"] || "None detected"}
                     </CalciteButton>
+                      <CalciteDropdownItem
+                        onCalciteDropdownItemSelect={() =>
+                          setLocalMapping((prevMapping) => ({
+                            ...prevMapping,
+                            addressFields: {
+                              ...prevMapping.addressFields,
+                              ["Zip"]: null,
+                            },
+                          }))
+                        }
+                      >
+                        None
+                      </CalciteDropdownItem>
                     {localMapping.fields?.map(({ name, alias }, index) => (
                       <CalciteDropdownItem
                         key={index}

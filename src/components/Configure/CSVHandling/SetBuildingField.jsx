@@ -25,7 +25,7 @@ function SetBuildingField() {
             <span>Select a field with <strong>Unique Values</strong> to serve as the name for each site to be referenced by</span>
           </CalciteTooltip>
           <CalciteListItem id="buildingFieldListItem">
-            <CalciteLabel slot="content">
+            <CalciteLabel slot="content" scale="s">
               Select Property Name Field
               <CalciteCombobox
                 placeholder="Select Name Field"
