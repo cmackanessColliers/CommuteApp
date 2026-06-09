@@ -32,13 +32,13 @@ function PrintChart({ chartData }) {
           const value = context.dataset.data[context.dataIndex];
           return value !== 0;   // ✅ hide labels when value is 0
         },
-        font: { weight: "bold", size: 14 }
+        font: { weight: "bold", size: 18 }
       },
       legend: {
         position: "right",
         labels: {
           boxWidth: 10,
-          font: {size:11},
+          font: {size:18},
           // filter: (legendItem, data) => {
           //   return data.datasets[0].data[legendItem.index] !== 0;
           // }
