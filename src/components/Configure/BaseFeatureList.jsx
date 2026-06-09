@@ -173,9 +173,9 @@ function CompFeatureList() {
                     </tr>
                   </tbody>
                 </table> */}
-                <div style={{width:"80%", height:"175px", alignContent:"center", justifyContent:"center", marginTop:"-30px"}}>
-                  <div style={{width:"100%", textAlign:"center", fontWeight:"bold", fontSize:"12px", padding:"10px"}}>Commuters Per Time Range</div>
-                  <div style={{height:"100px"}}>
+                <div style={{width:"70%", height:"175px", alignContent:"center", justifyContent:"center", marginTop:"-30px"}}>
+                  <div style={{width:"100%", textAlign:"center", fontWeight:"bold", fontSize:"12px", padding:"10px", marginTop:"-20px"}}>Commuters Per Time Range</div>
+                  <div style={{height:"110px"}}>
                     <PieChartStaging printChartData={pieChartData[feature.objectid]} />
                   </div>
                 </div>

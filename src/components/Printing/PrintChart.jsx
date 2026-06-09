@@ -24,14 +24,24 @@ function PrintChart({ chartData }) {
 
   const options = useMemo(() => ({
     maintainAspectRatio: false,
-    responsive: false,
-    layout: { padding: 10 },
+    responsive: true,
     plugins: {
+      datalabels: {
+        color: "#fff",
+        display: (context) => {
+          const value = context.dataset.data[context.dataIndex];
+          return value !== 0;   // ✅ hide labels when value is 0
+        },
+        font: { weight: "bold", size: 14 }
+      },
       legend: {
-        position: "bottom",
+        position: "right",
         labels: {
-          boxWidth: 12,
-          padding: 10,
+          boxWidth: 10,
+          font: {size:11},
+          // filter: (legendItem, data) => {
+          //   return data.datasets[0].data[legendItem.index] !== 0;
+          // }
         },
       },
       tooltip: {

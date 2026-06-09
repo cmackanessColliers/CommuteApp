@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { Chart } from "react-chartjs-2";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   Chart as ChartJS,
   BarController,
@@ -53,6 +54,13 @@ function BarChart(chartData) {
           boxHeight:'2'
         }
       },
+      datalabels: {
+        color: "#ffffff",
+        font: {
+          size: 10
+        },
+        display:true
+      }
     },
     scales: {
       y: {

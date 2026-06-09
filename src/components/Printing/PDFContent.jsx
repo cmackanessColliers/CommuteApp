@@ -85,8 +85,8 @@ export default function PDFContent({
               <Image source={ColliersLogo} style={{height:"40px",width:"60px", position:"absolute", left:"90%", top:"-.4in", objectFit:"contain",}} />
             </View>
           </View>
-          <View style={{height:"3.25in", width:"3in", backgroundColor:"white", border:"1px solid #aeafb6", position:"absolute", Zindex:"10", bottom:".1in", left:".1in"}}>
-            <Text style={{fontSize:"13px", textAlign:"center"}}>Commute Time Range</Text>
+          <View style={{height:"2.5in", width:"3in", backgroundColor:"white", border:"1px solid #aeafb6", position:"absolute", Zindex:"10", bottom:".1in", left:".1in"}}>
+            <Text style={{fontSize:"13px", textAlign:"center", marginBottom:"-10px", marginTop:"10px"}}>Commute Time Range</Text>
             <Image source={chartImages[`${feature.attributes.objectid}`]} style={{width:"100%", height:"100%", objectFit:"contain"}}></Image>
           </View>
           <View style={{height:"2.25in", width:"2.35in", backgroundColor:"white", border:"1px solid #aeafb6", position:"absolute", Zindex:"10", bottom:".15in", left:"9.25in"}}>

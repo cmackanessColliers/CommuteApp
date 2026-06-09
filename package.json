@@ -19,6 +19,7 @@
     "@react-pdf/renderer": "^4.5.1",
     "animejs": "^4.2.2",
     "chart.js": "^4.5.0",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "d3": "^7.9.0",
     "dexie": "^4.2.1",
     "export-to-csv": "^1.4.0",

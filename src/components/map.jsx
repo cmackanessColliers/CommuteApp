@@ -156,17 +156,23 @@ const MapComponent = () => {
         plugins: {
           tooltip: { enabled: true },
           legend: {
-            display:false
+            position: "right",
+            labels: {
+              boxWidth: 10,
+              font: {size:18},
+              filter: (legendItem, data) => {
+                return data.datasets[0].data[legendItem.index] !== 0;
+              }
+            },
           },
           datalabels: {
-            display: true,
-            align: 'bottom',
-            color: '#fff', // Font color for labels
-            font: {
-                weight: 'bold',
-                size: 14
+            color: "#fff",
+            display: (context) => {
+              const value = context.dataset.data[context.dataIndex];
+              return value !== 0;   // ✅ hide labels when value is 0
             },
-          }
+            font: { weight: "bold", size: 18 }
+          },
         },
       },
     });

@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Image } from "@react-pdf/renderer";
 import { Pie } from "react-chartjs-2";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   Chart as ChartJS,
   PieController, 
@@ -14,7 +15,8 @@ ChartJS.register(
   PieController,
   ArcElement,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataLabels
 );
 
 
@@ -25,11 +27,22 @@ function PieChart({ chartData }) {
     maintainAspectRatio: false,
     responsive: true,
     plugins: {
+      datalabels: {
+        color: "#fff",
+        display: (context) => {
+          const value = context.dataset.data[context.dataIndex];
+          return value !== 0;   // ✅ hide labels when value is 0
+        },
+        font: { weight: "bold", size: 9 }
+      },
       legend: {
         position: "right",
         labels: {
           boxWidth: 10,
-          padding: 10,
+          font: {size:9},
+          filter: (legendItem, data) => {
+            return data.datasets[0].data[legendItem.index] !== 0;
+          }
         },
       },
       tooltip: {
