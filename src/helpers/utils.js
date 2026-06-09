@@ -499,6 +499,44 @@ async function preprocessCSV(file) {
   return new File([cleanedCsv], file.name, { type: "text/csv" });
 }
 
+async function pieChartFormatting(commuteGraphics) {
+  const pieChartDict = {}
+  const timeBins = ["<30 mins", "31-45 mins", "46-60 mins", "61-90 mins", "91-120 mins", "121-3hrs"]
+  const barColors = ["#2AB6A9", "#1C54F4", "#4D93FF", "#9C45AE", "#FA6609", "#ED1B34"]
+  Object.values(commuteGraphics).forEach((feature) => {
+    pieChartDict[feature.objectid] = {
+      yValues: [
+        feature.CommuteTime_Under30, 
+        feature.CommuteTime_31_45, 
+        feature.CommuteTime_46_60, 
+        feature.CommuteTime_61_90,
+        feature.CommuteTime_91_120,
+        feature.CommuteTime_121_3,
+      ],
+      xValues: timeBins,
+      barColors: barColors
+    }
+  })
+  console.log("pieChartDict", pieChartDict)
+  return pieChartDict
+}
+
+async function barChartFormatting(commuteGraphics, buildingName) {
+  const labels = Object.values(commuteGraphics).map(graphic => graphic[buildingName])
+  const barChartDict = {
+    AvgTime: {
+      data: Object.values(commuteGraphics).map(graphic => graphic.AverageCommuteTime),
+      labels: labels,
+    },
+    AvgDist: {
+      data: Object.values(commuteGraphics).map(graphic => graphic.AverageCommuteDist),
+      labels: labels,
+    }
+  }
+  console.log("barChartDict", barChartDict)
+  return barChartDict
+}
+
 export {
   toProperCase,
   numFormatter,
@@ -510,4 +548,6 @@ export {
   getCsvHeaders,
   negativeToParentheses,
   preprocessCSV,
+  pieChartFormatting,
+  barChartFormatting,
 };

@@ -98,6 +98,104 @@ export const CommuteFields = [
     unit: "%"
   },
   {
+    name: "CommuteTime_31_45",
+    alias: "31-45 Min",
+    type: "double",
+    weight: 1,
+    unit: ""
+  },
+  {
+    name: "CommutePct_31_45",
+    alias: "% 31-45 Min",
+    type: "double",
+    weight: 1,
+    unit: "%"
+  },
+  {
+    name: "CommuteTime_46_60",
+    alias: "46-60 Min",
+    type: "double",
+    weight: 1,
+    unit: ""
+  },
+  {
+    name: "CommutePct_46_60",
+    alias: "% 46-60 Min",
+    type: "double",
+    weight: 1,
+    unit: "%"
+  },
+  {
+    name: "CommuteTime_61_90",
+    alias: "61-90 Min",
+    type: "double",
+    weight: 1,
+    unit: ""
+  },
+  {
+    name: "CommutePct_61_90",
+    alias: "% 61-90 Min",
+    type: "double",
+    weight: 1,
+    unit: "%"
+  },
+  {
+    name: "CommuteTime_91_120",
+    alias: "91-120 Min",
+    type: "double",
+    weight: 1,
+    unit: ""
+  },
+  {
+    name: "CommutePct_91_120",
+    alias: "% 91-120 Min",
+    type: "double",
+    weight: 1,
+    unit: "%"
+  },
+  {
+    name: "CommuteTime_91_120",
+    alias: "91-120 Min",
+    type: "double",
+    weight: 1,
+    unit: ""
+  },
+  {
+    name: "CommutePct_91_120",
+    alias: "% 91-120 Min",
+    type: "double",
+    weight: 1,
+    unit: "%"
+  },
+  {
+    name: "CommuteTime_121_3",
+    alias: "121-3 hrs",
+    type: "double",
+    weight: 1,
+    unit: ""
+  },
+  {
+    name: "CommutePct_121_3",
+    alias: "% 121-3 hrs",
+    type: "double",
+    weight: 1,
+    unit: "%"
+  },
+  {
+    name: "CommuteTime_3Plus",
+    alias: ">3 hrs",
+    type: "double",
+    weight: 1,
+    unit: ""
+  },
+  {
+    name: "CommutePct_3Plus",
+    alias: "% >3 hrs",
+    type: "double",
+    weight: 1,
+    unit: "%"
+  },
+  {
     name: "CommuteTimeDifference",
     alias: "Commute Time Difference",
     type: "double",

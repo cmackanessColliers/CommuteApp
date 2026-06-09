@@ -90,6 +90,7 @@ export async function generateCommuteAnalysis(
   let BLDSiteCoordList = [];
   let EMPLocList = [];
   let BLDLocList = [];
+  const EmpCommuteGraphics = []
   const BLDsiteLookup = {};
   const appId = import.meta.env.VITE_TRAVELTIME_APP_ID;
   const appKey = import.meta.env.VITE_TRAVELTIME_APP_KEY;
@@ -167,6 +168,12 @@ export async function generateCommuteAnalysis(
     let Time40_50 = 0;
     let Time50_60 = 0;
     let Time60Plus = 0;
+    let time31_45 = 0;
+    let time46_60 = 0;
+    let time61_90 = 0;
+    let time121_3 = 0;
+    let time91_120 = 0;
+    let time3Plus = 0;
     let AvgTime = calculateAverage(TravelTimeList);
     let AvgDist = calculateAverage(TravelDistList);
 
@@ -194,41 +201,87 @@ export async function generateCommuteAnalysis(
           Time60Plus = Time60Plus + 1;
           numEmployees = numEmployees + 1;
         }
+        if (TravelTimeList[time] > 30 && TravelTimeList[time] <= 45) {
+          time31_45 = time31_45 + 1;
+        }
+        if (TravelTimeList[time] > 45 && TravelTimeList[time] <= 60) {
+          time46_60 = time46_60 + 1;
+        }
+        if (TravelTimeList[time] > 60 && TravelTimeList[time] <= 90) {
+          time61_90 = time61_90 + 1;
+        }
+        if (TravelTimeList[time] > 90 && TravelTimeList[time] <= 120) {
+          time91_120 = time91_120 + 1;
+        }
+        if (TravelTimeList[time] > 120 && TravelTimeList[time] <= 180) {
+          time121_3 = time121_3 + 1;
+        }
+        if (TravelTimeList[time] > 180) {
+          time3Plus = time3Plus + 1;
+        }
       }
     } else {
       for (const site in CommuteDict) {
         if (CommuteDict[site].travelTime <= 10) {
           Time0_10 = Time0_10 + CommuteDict[site].EmployeeCount;
+          numEmployees = numEmployees + CommuteDict[site].EmployeeCount
         } else if (
           CommuteDict[site].travelTime > 10 &&
           CommuteDict[site].travelTime <= 20
         ) {
           Time10_20 = Time10_20 + CommuteDict[site].EmployeeCount;
+          numEmployees = numEmployees + CommuteDict[site].EmployeeCount
         } else if (
           CommuteDict[site].travelTime > 20 &&
           CommuteDict[site].travelTime <= 30
         ) {
           Time20_30 = Time20_30 + CommuteDict[site].EmployeeCount;
+          numEmployees = numEmployees + CommuteDict[site].EmployeeCount
         } else if (
           CommuteDict[site].travelTime > 30 &&
           CommuteDict[site].travelTime <= 40
         ) {
           Time30_40 = Time30_40 + CommuteDict[site].EmployeeCount;
+          numEmployees = numEmployees + CommuteDict[site].EmployeeCount
         } else if (
           CommuteDict[site].travelTime > 40 &&
           CommuteDict[site].travelTime <= 50
         ) {
           Time40_50 = Time40_50 + CommuteDict[site].EmployeeCount;
+          numEmployees = numEmployees + CommuteDict[site].EmployeeCount
         } else if (
           CommuteDict[site].travelTime > 50 &&
           CommuteDict[site].travelTime <= 60
         ) {
           Time50_60 = Time50_60 + CommuteDict[site].EmployeeCount;
+          numEmployees = numEmployees + CommuteDict[site].EmployeeCount
         } else {
           Time60Plus = Time60Plus + CommuteDict[site].EmployeeCount;
+          numEmployees = numEmployees + CommuteDict[site].EmployeeCount
+        }
+        if (CommuteDict[site].travelTime > 30 && CommuteDict[site].travelTime <= 45) {
+          time31_45 = time31_45 + CommuteDict[site].EmployeeCount;
+        }
+        if (CommuteDict[site].travelTime > 45 && CommuteDict[site].travelTime <= 60) {
+          time46_60 = time46_60 + CommuteDict[site].EmployeeCount;
+        }
+        if (CommuteDict[site].travelTime > 60 && CommuteDict[site].travelTime <= 90) {
+          time61_90 = time61_90 + CommuteDict[site].EmployeeCount;
+        }
+        if (CommuteDict[site].travelTime > 90 && CommuteDict[site].travelTime <= 120) {
+          time91_120 = time91_120 + CommuteDict[site].EmployeeCount;
+        }
+        if (CommuteDict[site].travelTime > 120 && CommuteDict[site].travelTime <= 180) {
+          time121_3 = time121_3 + CommuteDict[site].EmployeeCount;
+        }
+        if (CommuteDict[site].travelTime > 180) {
+          time3Plus = time3Plus + CommuteDict[site].EmployeeCount;
         }
       }
     }
+
+    // console.log("CommuteDict", CommuteDict)
+    // console.log("numEmployees", numEmployees)
 
     if (baselineFeature?.length > 0) {
       if (
@@ -240,6 +293,7 @@ export async function generateCommuteAnalysis(
           Math.round(AvgDist * 100) / 100;
       }
     }
+
     
     BLDsiteLookup[sourceFeature].attributes["CommuteTime_Under10"] = Time0_10;
     BLDsiteLookup[sourceFeature].attributes["CommutePct_Under10"] = ((Time0_10/numEmployees)*100).toFixed(2);
@@ -255,6 +309,18 @@ export async function generateCommuteAnalysis(
     BLDsiteLookup[sourceFeature].attributes["CommutePct_50_60"] = ((Time50_60/numEmployees)*100).toFixed(2);
     BLDsiteLookup[sourceFeature].attributes["CommuteTime_60Plus"] = Time60Plus;
     BLDsiteLookup[sourceFeature].attributes["CommutePct_60Plus"] = ((Time60Plus/numEmployees)*100).toFixed(2);
+    BLDsiteLookup[sourceFeature].attributes["CommuteTime_31_45"] = time31_45;
+    BLDsiteLookup[sourceFeature].attributes["CommutePct_31_45"] = ((time31_45/numEmployees)*100).toFixed(2);
+    BLDsiteLookup[sourceFeature].attributes["CommuteTime_46_60"] = time46_60;
+    BLDsiteLookup[sourceFeature].attributes["CommutePct_46_60"] = ((time46_60/numEmployees)*100).toFixed(2);
+    BLDsiteLookup[sourceFeature].attributes["CommuteTime_61_90"] = time61_90;
+    BLDsiteLookup[sourceFeature].attributes["CommutePct_61_90"] = ((time61_90/numEmployees)*100).toFixed(2);
+    BLDsiteLookup[sourceFeature].attributes["CommuteTime_91_120"] = time91_120;
+    BLDsiteLookup[sourceFeature].attributes["CommutePct_91_120"] = ((time91_120/numEmployees)*100).toFixed(2);
+    BLDsiteLookup[sourceFeature].attributes["CommuteTime_121_3"] = time121_3;
+    BLDsiteLookup[sourceFeature].attributes["CommutePct_121_3"] = ((time121_3/numEmployees)*100).toFixed(2);
+    BLDsiteLookup[sourceFeature].attributes["CommuteTime_3Plus"] = time121_3;
+    BLDsiteLookup[sourceFeature].attributes["CommutePct_3Plus"] = ((time121_3/numEmployees)*100).toFixed(2);
     BLDsiteLookup[sourceFeature].attributes["AverageCommuteTime"] = Math.round(AvgTime * 100) / 100;
     BLDsiteLookup[sourceFeature].attributes["AverageCommuteDist"] = Math.round(AvgDist * 100) / 100;
     BLDsiteLookup[sourceFeature].attributes["CommuteTime_Under30"] = Time0_10 + Time10_20 + Time20_30;
@@ -270,7 +336,6 @@ export async function generateCommuteAnalysis(
   };
 
 
-  const EmpCommuteGraphics = []
   for (let i = 0; i < BLDSiteCoordList.length; i += 10) {
     const batch = BLDSiteCoordList.slice(i, i + 10);
     const ApiCallArray = [];
@@ -309,7 +374,7 @@ export async function generateCommuteAnalysis(
     const batchGraphics = jsonOut?.results?.map((feature) =>
       featureBuilder(feature)
     );
-    console.log("JsonOut", jsonOut)
+    // console.log("JsonOut", jsonOut)
     
     jsonOut?.results?.forEach((feature) => {
       const BLD_ID = feature.search_id.split(" ")[0].replace("BLD_", "");
@@ -321,12 +386,20 @@ export async function generateCommuteAnalysis(
         );
         if (!sourceFeature) return;
         // ✅ Clone attributes safely
-        const newAttributes = {
-          ...sourceFeature.attributes,
-          BLDSite: BLD_ID,
-          travelTime: empFeature.properties[0].travel_time / 60,
-          travelDist: empFeature.properties[0].distance / 1609.34,
-        };
+        
+        const newAttributes = Object.fromEntries(
+          Object.entries(sourceFeature.attributes).filter(
+            ([key]) => key.toLowerCase() !== "objectid"
+          )
+        );
+
+        newAttributes.BLDSite = BLD_ID;
+        newAttributes.travelTime = empFeature.properties[0].travel_time / 60;
+        newAttributes.travelDist = empFeature.properties[0].distance / 1609.34;
+
+        if (employeeCountField) {
+          newAttributes["CommuterCount"] = sourceFeature.attributes[employeeCountField]
+        }
         // ✅ Create a true Graphic
         const newGraphic = new Graphic({
           geometry: sourceFeature.geometry,

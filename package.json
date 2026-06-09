@@ -16,7 +16,7 @@
     "@esri/calcite-components": "^3.3.0",
     "@esri/calcite-components-react": "^3.3.0",
     "@fontsource/open-sans": "^5.2.7",
-    "@react-pdf/renderer": "^4.3.2",
+    "@react-pdf/renderer": "^4.5.1",
     "animejs": "^4.2.2",
     "chart.js": "^4.5.0",
     "d3": "^7.9.0",

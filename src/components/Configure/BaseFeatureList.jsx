@@ -5,11 +5,13 @@ import {
   CalciteDropdown,
   CalciteDropdownItem,
   CalciteButton,
-  CalciteInput
+  CalciteInput,
+  CalciteBlock
 } from "@esri/calcite-components-react";
 
 import { useState, useRef, useEffect } from "react";
 import useAppStateStore from "../../stores/AppStateStore";
+import PieChartStaging from "../Printing/PieChartStaging";
 
 function CompFeatureList() {
   const baselineLayer = useAppStateStore((state) => state.baselineLayer);
@@ -18,6 +20,10 @@ function CompFeatureList() {
   const buildingField = useAppStateStore((state) => state.buildingField)
   const map = useAppStateStore((state) => state.map);
   const commuteGraphics = useAppStateStore((state) => state.commuteGraphics);
+  const pieChartData = useAppStateStore((state) => state.pieChartData);
+  const setSelectedSite = useAppStateStore((state) => state.setSelectedSite);
+  const selectedSite = useAppStateStore((state) => state.selectedSite);
+  const empCommuteLayer = useAppStateStore((state) => state.empCommuteLayer);
   const [renamingIndex, setRenamingIndex] = useState(null);
   const [openIndex, setOpenIndex] = useState(null);
   const [renameValue, setRenameValue] = useState("");
@@ -31,6 +37,13 @@ function CompFeatureList() {
       }
     };
   }, []);
+
+  
+  const sortedCommuteGraphics = Array.isArray(commuteGraphics)
+  ? [...commuteGraphics].sort((a, b) => a.AverageCommuteTime - b.AverageCommuteTime)
+  : Object.values(commuteGraphics || {}).sort(
+      (a, b) => a.AverageCommuteTime - b.AverageCommuteTime
+    );
   
   
   async function removeFeature(feature, index) {
@@ -86,98 +99,98 @@ function CompFeatureList() {
   }
 
   return (
-    <CalciteCardGroup style={{display:"flex", flexDirection:"column", height:"100%", width:"100%", gap:"10px", marginInline:"auto",}}>
-      {baselineFeatures?.map((feature, index) => (
-        <CalciteCard key={index} style={{width:"97%", marginInline:"auto",}}
-          onMouseEnter={() => {
-            handleHoverHighlight(
-              feature?.attributes?.[feature?.layer?.objectIdField],
-              "enter"
-            );
-          }}
-          onMouseLeave={() => {
-            handleHoverHighlight(null, "leave");
-          }}
-        >
-          <div style={{display:"flex", flexDirection:"row", justifyContent:"space-between"}}>  
-            {renamingIndex !== index && (
-              <div style={{width:"70%", fontSize:"15px", fontWeight:"bold"}}>{feature.attributes[buildingField]}</div>
-            )}
-            {renamingIndex === index && (
-              <div style={{display:"flex", flexDirection:"row", gap:"2px"}}>
-                <CalciteInput
-                  placeholder="Enter new name"
-                  value={renameValue}
-                  onCalciteInputInput={(e) => setRenameValue(e.target.value)}
-                >
-                  <CalciteButton slot="action" iconStart="check-circle-f"
-                    onClick={()=>{
-                      renameFeature(feature, renameValue, index)
-                      setOpenIndex(null)
-                      setRenamingIndex(null)
-                    }}
-                  ></CalciteButton>
-                </CalciteInput>
+    <CalciteCardGroup style={{height:"100%", width:"100%", marginInline:"auto"}}
+      label="BaselineSites"
+      selection-mode="single"
+      onCalciteCardGroupSelect={(e) => {
+        if (e.target.selectedItems?.length) {
+          // console.log(e.target.selectedItems[0].label)
+          setSelectedSite(e.target.selectedItems[0].label)
+        } else {
+          setSelectedSite(null)
+        }
+      }}
+    >
+      {sortedCommuteGraphics.map((feature, index) => (
+          <CalciteCard style={{width:"97%", marginInline:"auto"}}
+            label={`${feature.objectid}`}
+            id={`${feature.objectid}`}
+            key={`${feature.objectid}`}
+            onMouseEnter={() => {
+              handleHoverHighlight(
+                feature?.objectid,
+                "enter"
+              );
+            }}
+            onMouseLeave={() => {
+              handleHoverHighlight(null, "leave");
+            }}
+          >
+            <div slot="heading" style={{display:"flex", flexDirection:"column", justifyContent:"space-between"}}>  
+              {renamingIndex !== index && (
+                <>
+                  <div style={{width:"70%", fontSize:"15px", fontWeight:"bold",}}>{feature[buildingField]}</div>
+                </>
+              )}
+            </div>
+            {commuteGraphics && (
+              <div slot="description" style={{marginTop:"5px", width:"99%", display:"flex", flexDirection:"row", gap:"10px"}}>
+                <div style={{display:"flex", flexDirection:"column", width:"30%", marginTop:"auto", marginBottom:"auto"}}>
+                  <table>
+                    <tbody>
+                      <tr>
+                        <th style={{paddingTop:"5px", paddingBottom:"5px"}}>Avg Time</th>
+                        <td style={{paddingTop:"5px", paddingBottom:"5px"}}>{feature.AverageCommuteTime}</td>
+                      </tr>
+                      <tr>
+                        <th style={{paddingTop:"5px", paddingBottom:"5px"}}>Avg Dist</th>
+                        <td style={{paddingTop:"5px", paddingBottom:"5px"}}>{feature.AverageCommuteDist}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                {/* <table>
+                  <thead>
+                    <tr>
+                      <th>{"<30 mins"}</th>
+                      <th>{"31-45 mins"}</th>
+                      <th>{"46-60 mins"}</th>
+                      <th>{"61-90 mins"}</th>
+                      <th>{"91-120 mins"}</th>
+                      <th>{"121-3 hrs"}</th>
+                      <th>{">3 hrs"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{feature.CommuteTime_Under30}</td>
+                      <td>{feature.CommuteTime_31_45}</td>
+                      <td>{feature.CommuteTime_46_60}</td>
+                      <td>{feature.CommuteTime_61_90}</td>
+                      <td>{feature.CommuteTime_91_120}</td>
+                      <td>{feature.CommuteTime_121_3}</td>
+                      <td>{feature.CommuteTime_3Plus}</td>
+                    </tr>
+                  </tbody>
+                </table> */}
+                <div style={{width:"80%", height:"175px", alignContent:"center", justifyContent:"center", marginTop:"-30px"}}>
+                  <div style={{width:"100%", textAlign:"center", fontWeight:"bold", fontSize:"12px", padding:"10px"}}>Commuters Per Time Range</div>
+                  <div style={{height:"100px"}}>
+                    <PieChartStaging printChartData={pieChartData[feature.objectid]} />
+                  </div>
+                </div>
               </div>
             )}
-            <CalciteDropdown
-              open={openIndex === index}
-              onCalciteDropdownOpen={() => setOpenIndex(index)}
-              onCalciteDropdownClose={() => setOpenIndex(null)}
-              overlayPositioning="fixed"
+            {/* <CalciteBlock
+              heading="Commute Chart"
+              collapsible
             >
-              <CalciteButton slot="trigger" appearance="outline" style={{ height:"25px", alignSelf:"center", marginRight:"5px"}}>
-                Options
-              </CalciteButton>
-
-              <CalciteDropdownItem
-                onClick={() => setRenamingIndex(index)}
-              >
-                Rename
-              </CalciteDropdownItem>
-
-              <CalciteDropdownItem
-                onClick={() => removeFeature(feature, index)}
-              >
-                Delete
-              </CalciteDropdownItem>
-            </CalciteDropdown>
-          </div>
-          {commuteGraphics && (
-            <div style={{marginTop:"5px"}}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>{"<10 mins"}</th>
-                    <th>{"10-20 mins"}</th>
-                    <th>{"20-30 mins"}</th>
-                    <th>{"30-40 mins"}</th>
-                    <th>{"40-50 mins"}</th>
-                    <th>{"50-60 mins"}</th>
-                    <th>{">1hr mins"}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(commuteGraphics)
-                    .filter(([_, graphic]) => (feature.attributes[buildingField] === graphic[buildingField]))
-                    .map(([key,graphic]) => (
-                      <tr key={key}>
-                        <td>{graphic.CommuteTime_Under10}</td>
-                        <td>{graphic.CommuteTime_10_20}</td>
-                        <td>{graphic.CommuteTime_20_30}</td>
-                        <td>{graphic.CommuteTime_30_40}</td>
-                        <td>{graphic.CommuteTime_40_50}</td>
-                        <td>{graphic.CommuteTime_50_60}</td>
-                        <td>{graphic.CommuteTime_60Plus}</td>
-                      </tr>
-                    ))
-                  }
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CalciteCard>
-      ))}
+              <div style={{width:"100%", height:"175px", alignContent:"center", justifyContent:"center"}}>
+                <PieChartStaging printChartData={pieChartData[feature.objectid]} />
+              </div>
+            </CalciteBlock> */}
+          </CalciteCard>
+        ))}
     </CalciteCardGroup>
   );
 }

@@ -9,7 +9,7 @@ import {
   CalciteInputTimePicker,
   CalciteButton,
 } from "@esri/calcite-components-react";
-
+import BarChartStaging from "../Printing/BarChartStaging";
 import MapComponent from "../map";
 import { useState, useEffect, useRef, useCallback, } from "react";
 import "@arcgis/map-components/components/arcgis-search";
@@ -45,8 +45,10 @@ function ReportContent() {
   const setTradeAreaLayer = useAppStateStore((state) => state.setTradeAreaLayer)
   const employeeCountField = useAppStateStore((state) => state.employeeCountField);
   const configReady = useAppStateStore((state) => state.configReady);
+  const printingActive = useAppStateStore((state) => state.printingActive);
   const setConfigReady = useAppStateStore((state) => state.setConfigReady)
   const commuteGraphics = useAppStateStore((state) => state.commuteGraphics)
+  const barChartData = useAppStateStore((state) => state.barChartData)
   const setCommuteGraphics = useAppStateStore((state) => state.setCommuteGraphics)
   const {
     setSiteFileName,
@@ -64,142 +66,52 @@ function ReportContent() {
   const searchRef = useRef(null); 
   const baseSearchRef = useRef(null); 
 
-  // useEffect(() => {
-  //   if (baselineFeatures?.length && compareFeatures?.length) {
-  //     setTimeout(() => {
-  //       handleCommuteAnalysis()
-  //     }, 2000);
-  //   }
-  // }, [baselineFeatures, compareFeatures])
-
-  // function handleCreateRoutes() {
-  //   setIsLoading(true);
-  //   try {
-  //     // Call the helper function to get travel time areas
-  //     const resultsLayer = map?.map?.layers?.find((l) =>
-  //       l?.title?.includes("Travel Routes"),
-  //     );
-  //     if (resultsLayer){
-  //       map?.map?.remove(resultsLayer)
-  //     };
-  //     const routeTime = {"Arrival Time": time, "Departure Time": time}
-  //     const routeCost = {fuelPerGal: 3, wagePerHour:27}
-  //     // console.log(
-  //     //   "compareFeatures", compareFeatures,
-  //     //   "baselineFeatures", baselineFeatures,
-  //     //   "Time",routeTime,
-  //     //   "routeCost",routeCost,)
-  //     if (
-  //       (!compareFeatures?.length && !baselineFeatures?.length)
-  //     ) {
-  //       setIsLoading(false);
-  //       return;
-  //     }
-  //     console.log("Getting Routes");
-  //     getRoutes(
-  //       layer,
-  //       baselineFeatures,
-  //       null,
-  //       routeTime,
-  //       routeCost,
-  //       nameField || "name",
-  //     ).then(([RouteLayer, rankedSiteRouting]) => {
-  //       // console.log("RouteLayer", RouteLayer)
-  //       // console.log("rankedSiteRouting", rankedSiteRouting)
-  //       map?.map?.layers?.add(RouteLayer)
-  //       setRouteLayer(RouteLayer)
-  //       if (
-  //         resultsLayer &&
-  //         resultsLayer.title === `Travel Routes` &&
-  //         areaType !== "h3"
-  //       ) {
-  //         resultsLayer.refresh();
-  //         setIsLoading(false);
-  //       }
-  //       map?.map?.remove(resultsLayer);
-  //       setIsLoading(false);
-  //     });
-  //   } catch (err) {
-  //     setIsLoading(false);
-  //     throw new Error("Problem generating routes: ", err);
-  //   }
-  // }
-
-  // function handleCommuteAnalysis() {
-  //   setIsLoading(true);
-  //   try {
-  //     if (
-  //       (!compareFeatures?.length && !baselineFeatures?.length)
-  //     ) {
-  //       setIsLoading(false);
-  //       return;
-  //     }
-  //     console.log("Getting Routes");
-      
-  //       generateCommuteAnalysis(
-  //         baselineFeatures,
-  //         layer,
-  //         "driving",
-  //         null,
-  //         employeeCountField,
-  //         nameField || "name",
-  //       ).then(([Facilitygraphics, commuteTimes]) => {
-  //       console.log("CommuteGraphics", graphics)
-  //       setCommuteGraphics(graphics)
-  //       setIsLoading(false);
-  //     });
-  //   } catch (err) {
-  //     setIsLoading(false);
-  //     throw new Error("Problem generating routes: ", err);
-  //   }
-  // }
-
 
 
   return (
     <div style={{display:"flex", flexDirection:"column", height:"100vh", width:"100vw"}}>
-        <div style={{display:"flex", flexDirection:"row", height:"10%", width:"100%", backgroundColor: "#000759", justifyContent:"space-between"}}>
+        <div style={{display:"flex", flexDirection:"row", height:"8%", width:"100%", backgroundColor: "#000759", justifyContent:"space-between"}}>
           <div style={{width:"50%", height:"100%", display:"flex", alignItems:"center", flexDirection:"row", gap:"10px"}}>
             <img src={ColliersLogo} alt="" style={{height:"50%", width:"80px", objectFit:"contain", marginLeft:"10px"}}></img>
-            <h1 style={{color: "white"}}>Colliers Route Comparison App</h1>
+            <h1 style={{color: "white"}}>Colliers Commutalyzer</h1>
           </div>
           {configReady && (
             <div style={{marginRight:"30px", alignContent:"center",}}>
-              <CalciteButton appearance="outline-fill" onClick={() => {setConfigReady(false)}}>Open Config</CalciteButton>
+              <CalciteButton appearance="outline-fill" iconStart="app-gear" onClick={() => {setConfigReady(false)}}>Open Config</CalciteButton>
             </div>
           )}
         </div>
-        <div style={{width:"100%", height:"90%", display:"flex", flexDirection:"row"}}>
-          <MapComponent />
-          <div style={{width:"50%", height:"100%",display:"flex", flexDirection:"column"}}>
-            {configReady && (
-              <div style={{display:"flex", flexDirection:"column", height:"100%", gap:"10px"}}>
-                {baselineFeatures?.length && (
-                  <>
-                    <div style={{width:"97%", marginInline:"auto", backgroundColor:"#eaeaeb", outline:"1px solid #CCCDD5", marginBottom:"4px", marginTop:"2px", borderRadius: "var(--root-border-radius)",boxShadow: "var(--optimal-shadow)",}}>
-                      <div style={{textAlign:"center", fontSize:"20px", padding:"5px"}}>Baseline Sites</div>
-                    </div>
-                    <div style={{display:"flex", flexDirection:"column", overflow:"auto", minHeight:"20%", maxheight:"100%", width:"98%"}}>
-                      <BaseFeatureList />              
-                    </div>
-                  </>
-                )}
-                {/* {compareFeatures?.length  && nameField !== null && (
-                  <>
-                    <div style={{width:"97%", marginInline:"auto", backgroundColor:"#eaeaeb", outline:"1px solid #CCCDD5", marginBottom:"4px", marginTop:"2px", borderRadius: "var(--root-border-radius)",boxShadow: "var(--optimal-shadow)",}}>
-                      <div style={{textAlign:"center", fontSize:"20px", padding:"5px"}}>Comparison Sites</div>
-                    </div>
-                    <div style={{display:"flex", flexDirection:"column", overflow:"auto", minHeight:"20%", maxheight:"40%"}}>
-                      <CompFeatureList />
-                    </div>
-                  </>
-                )} */}
+        <div style={{width:"100%", height:"92%", display:"flex", flexDirection:"row"}}>
+          <div style={{display:"flex", flexDirection:"column", width:"100%"}}>
+            <MapComponent />
+            {(!printingActive && barChartData) && (
+              <div style={{height:"50%", display:"flex", flexDirection:"column"}}>
+                <div style={{textAlign:"center", fontWeight:"bold", fontSize:"20px"}}>Average Travel Time and Distance By Site</div>
+                <BarChartStaging chartData={barChartData} />
               </div>
             )}
-            {!configReady && (
-              <ConfigBlock />
-            )}
           </div>
+          {!printingActive && (
+            <div style={{width:"50%", height:"100%",display:"flex", flexDirection:"column"}}>
+              {configReady && (
+                <div style={{display:"flex", flexDirection:"column", height:"100%", gap:"10px"}}>
+                  {baselineFeatures?.length && (
+                    <>
+                      <div style={{width:"97%", marginInline:"auto", backgroundColor:"#eaeaeb", outline:"1px solid #CCCDD5", marginBottom:"4px", marginTop:"2px", borderRadius: "var(--root-border-radius)",boxShadow: "var(--optimal-shadow)",}}>
+                        <div style={{textAlign:"center", fontSize:"20px", padding:"5px"}}>Baseline Sites</div>
+                      </div>
+                      <div style={{display:"flex", flexDirection:"column", overflow:"auto", minHeight:"20%", maxheight:"100%", width:"98%"}}>
+                        <BaseFeatureList />              
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+              {!configReady && (
+                <ConfigBlock />
+              )}
+            </div>
+          )}
         </div>
     </div>
   );

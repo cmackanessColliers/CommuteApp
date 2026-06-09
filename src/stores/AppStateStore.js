@@ -8,6 +8,7 @@ import useUIStore from "./UIStore.js";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import Graphic from "@arcgis/core/Graphic";
 import SetBuildingField from "../components/Configure/CSVHandling/SetBuildingField.jsx";
+import { pieChartFormatting } from "../helpers/utils.js";
 
 const nonPersistedKeys = [
   "map",
@@ -34,14 +35,20 @@ const nonPersistedKeys = [
   "useTradeArea",
   "configReady",
   "commuteGraphics",
-  "empCommuteLayer"
+  "empCommuteLayer",
+  "selectedSite",
+  "imageArray",
+  "pieChartData",
+  "barChartData",
+  "printingActive", 
 ];
 
 const featureLayerStateKeys = [
-  "officeLayer",
-  "imageLayer",
-  "SubmarketLayer",
-  "reportTable",
+  "baselineLayer",
+  "tradeAreaLayer",
+  "routeLayer",
+  "empCommuteLayer",
+  "layer", 
 ];
 
 function handleLayerSwapping(role, key, state, layer) {
@@ -49,10 +56,10 @@ function handleLayerSwapping(role, key, state, layer) {
     const currentLayer = state[key];
     const map = state.map?.map;
 
-    if (currentLayer?.title === layer?.title) {
-      // Still return the layer to ensure state update triggers
-      return { [key]: layer };
-    }
+    // if (currentLayer?.title === layer?.title) {
+    //   // Still return the layer to ensure state update triggers
+    //   return { [key]: layer };
+    // }
 
     // Find and remove the old layer from the map
     if (currentLayer) {
@@ -94,7 +101,12 @@ const initialState = {
   portalItems: null,
   searchString: "",
   setupComplete: false,
-  employeeCountField: null, // field for employee count
+  selectedSite: null, 
+  imageArray: null,
+  pieChartData: null,
+  barChartData: null,
+  printingActive: false,
+  employeeCountField: null,
   fieldMappingDialogVisible: false, // To control visibility of field mapping dialog
   fieldMappingRole: null, // Which role (Site/Employee/etc) is currently doing field mapping
   fieldMappingResolver: null, // Function to resolve when field mapping is complete
@@ -118,6 +130,9 @@ const useAppStateStore = create(
       setBuildingField: (buildingField) => set({buildingField: buildingField}),
       setKeyFeature: (keyFeature) => set({keyFeature: keyFeature}),
       setCommuteGraphics: (graphics) => set({commuteGraphics: graphics}),
+      setPieChartData: (data) => set({pieChartData: data}),
+      setBarChartData: (state) => set({barChartData: state}),
+      setPrintingActive: (data) => set({printingActive: data}),
       setEmpCommuteLayer: (layer) => {
         const loadLayer = async (layer) => {
           await layer?.load();
@@ -215,7 +230,7 @@ const useAppStateStore = create(
             );
             if (loadedLayer) {
               loadedLayer.queryFeatures().then((result) => {
-                console.log("baseline Features", result)
+                console.log("baseline Features", result.features)
                 setBaselineFeatures(result.features)
               }) 
             }
@@ -224,6 +239,8 @@ const useAppStateStore = create(
         });
       },
       setEmployeeCountField: (field) => set({ employeeCountField: field }),
+      setSelectedSite: (site) => set({selectedSite: site}),
+      setImageArray: (images) => set({imageArray: images}),
       setFieldMappingDialogVisible: (visible, role = null) => {
         console.log(
           "Setting field mapping dialog visibility to: ",

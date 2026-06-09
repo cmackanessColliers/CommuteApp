@@ -1,6 +1,7 @@
 import CIMSymbol from "@arcgis/core/symbols/CIMSymbol.js";
 import UniqueValueRenderer from "@arcgis/core/renderers/UniqueValueRenderer.js";
 import SimpleRenderer from "@arcgis/core/renderers/SimpleRenderer";
+import ClassBreaksRenderer from "@arcgis/core/renderers/ClassBreaksRenderer.js";
 
 const siteSymbol = {
   type: "simple",
@@ -517,13 +518,13 @@ const employeeSymbol ={
                       joinStyle: "Round",
                       lineStyle3D: "Strip",
                       miterLimit: 10,
-                      width: 0,
-                      color: [110, 110, 110, 255],
+                      width: 1,
+                      color: [255, 255, 255, 255],
                     },
                     {
                       type: "CIMSolidFill",
                       enable: true,
-                      color: [28, 84, 244, 175],
+                      color: [28, 84, 244, 255],
                     },
                   ],
                 },
@@ -1449,4 +1450,122 @@ const featureReductionSettings = {
   ],
 };
 
-export { siteSymbol, employeeSymbol, inboundSymbol, outboundSymbol, routesSymbols, tradeAreaSymbol, featureReductionSettings, };
+const EmpCommuteRenderer = {
+  type: "class-breaks",
+  field: "travelTime",
+  classBreakInfos: [
+    {
+      minValue: 0,
+      maxValue: 30,
+      label: "30 mins or less",
+      symbol: {
+        type: "simple-marker",
+        size: 10,
+        color: [42, 182, 169],
+        outline: {
+          width: 1,
+          color: "white"
+        }
+      }
+    }, 
+    {
+      minValue: 31,
+      maxValue: 45,
+      label: "31 to 45 mins",
+      symbol: {
+        type: "simple-marker",
+        size: 10,
+        color: [28, 84, 244],
+        outline: {
+          width: 1,
+          color: "white"
+        }
+      } 
+    }, 
+    {
+      minValue: 46,
+      maxValue: 60,
+      label: "46 to 60 mins",
+      symbol: {
+        type: "simple-marker",
+        size: 10,
+        color: [77, 147, 255],
+        outline: {
+          width: 1,
+          color: "white"
+        }
+      } 
+    }, 
+    {
+      minValue: 61,
+      maxValue: 90,
+      label: "61 to 90 mins",
+      symbol: {
+        type: "simple-marker",
+        size: 10,
+        color: [156, 69, 174],
+        outline: {
+          width: 1,
+          color: "white"
+        }
+      } 
+    }, 
+    {
+      minValue: 91,
+      maxValue: 120,
+      label: "91 to 120 mins",
+      symbol: {
+        type: "simple-marker",
+        size: 10,
+        color: [250, 102, 9],
+        outline: {
+          width: 1,
+          color: "white"
+        }
+      } 
+    }, 
+    {
+      minValue: 121,
+      maxValue: 180,
+      label: "121 to 3 hours",
+      symbol: {
+        type: "simple-marker",
+        size: 10,
+        color: [237, 27, 52],
+        outline: {
+          width: 1,
+          color: "white"
+        }
+      } 
+    }, 
+    {
+      minValue: 181,
+      maxValue: 500,
+      label: "Exclude (3 hours+ commute or no public commute info)",
+      symbol: {
+        type: "simple-marker",
+        style: "triangle",
+        size: 10,
+        color: [237, 27, 52],
+        outline: {
+          width: 1,
+          color: "white"
+        }
+      }
+    }
+  ]
+}
+
+const EmpCommuteVisualVariables = [
+    {
+      type: "size",
+      field: "CommuterCount",
+      minDataValue: 0,
+      maxDataValue: 20,
+      minSize: 12,
+      maxSize: 40
+    }
+  ]
+
+
+export { siteSymbol, employeeSymbol, inboundSymbol, outboundSymbol, routesSymbols, tradeAreaSymbol, featureReductionSettings, EmpCommuteRenderer, EmpCommuteVisualVariables };
