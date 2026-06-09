@@ -64,6 +64,19 @@ async function initializeArcGisModules() {
 
 }
 
+function convertDecimalToTime(decimalHours) {
+  // Extract the whole hours
+  const hours = Math.floor(decimalHours);
+  
+  // Multiply the remaining decimal fraction by 60 and round it
+  const minutes = Math.round((decimalHours - hours) * 60);
+
+  // Format with leading zeros for standard HH:MM presentation
+  const formattedHours = String(hours).padStart(2, '0');
+  const formattedMinutes = String(minutes).padStart(2, '0');
+
+  return `${formattedHours}:${formattedMinutes}`;
+}
 
 export async function generateCommuteAnalysis(
   BldSites,

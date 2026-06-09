@@ -1416,13 +1416,57 @@ const tradeAreaSymbol = new SimpleRenderer({
   type: "simple",
   symbol: {
     type: "simple-fill",
-    color: [28, 84, 244, 0.25],
+    color: [28, 84, 244, 0.1],
     outline: {
       color: [255, 255, 255, 0.25],
       width: "1px",
     },
   },
 });
+
+const defaultOutputTradeAreaSymbol = {
+  type: "simple-fill",
+  color: [0, 7, 89, .15],
+  outline: {
+    color: [255, 255, 255, 1],
+    width: "1px",
+  },
+};
+
+const baselineOutputTradeAreaSymbol = {
+  type: "simple-fill",
+  color: [28, 84, 244, .15],
+  outline: {
+    color: [255, 255, 255, 1],
+    width: "2px",
+  },
+};
+
+const comparisonOutputTradeAreaSymbol = {
+  type: "simple-fill",
+  color: [37, 64, 143, .15],
+  outline: {
+    color: "#000759bb",
+    width: "1px",
+  },
+};
+
+const outputTradeAreaSymbol = new UniqueValueRenderer({
+  type: "unique-value", // autocasts as new SimpleRenderer()
+  field: "STATUS",
+  defaultSymbol: defaultOutputTradeAreaSymbol,
+  uniqueValueInfos: [
+    {
+      value: "Baseline Site",
+      symbol: baselineOutputTradeAreaSymbol,
+    },
+    {
+      value: "Comparison Site",
+      symbol: comparisonOutputTradeAreaSymbol,
+    },
+  ],
+});
+
 
 const featureReductionLabelSymbol = {
   type: "text",
@@ -1568,4 +1612,4 @@ const EmpCommuteVisualVariables = [
   ]
 
 
-export { siteSymbol, employeeSymbol, inboundSymbol, outboundSymbol, routesSymbols, tradeAreaSymbol, featureReductionSettings, EmpCommuteRenderer, EmpCommuteVisualVariables };
+export { siteSymbol, employeeSymbol, inboundSymbol, outboundSymbol, routesSymbols, tradeAreaSymbol, outputTradeAreaSymbol, featureReductionSettings, EmpCommuteRenderer, EmpCommuteVisualVariables };

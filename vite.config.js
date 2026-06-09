@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     react({ devTarget: "es2022" }),
     basicSsl(),
-    visualizer({ filename: "SubmarketUpdateApp/stats.html" }),
+    visualizer({ filename: "CommuteApp/stats.html" }),
   ],
   server: {
     port: 5174,

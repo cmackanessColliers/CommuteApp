@@ -76,6 +76,7 @@ function SelectBaselineSite() {
                       //   type: "SET_BASELINE_FEATURE",
                       //   payload: selectedFeatures,
                       // });
+                      console.log("selectedFeatures", selectedFeatures)
                       setKeyFeature(selectedFeatures);
                     }}
                   >

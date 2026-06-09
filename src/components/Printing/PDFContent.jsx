@@ -38,7 +38,6 @@ export default function PDFContent({
       textAlign: "center",
       justifyContent:"center",
       fontWeight: "bold",
-      padding:"10px"
     },
     submarketHeader: {
       fontSize: "12px",

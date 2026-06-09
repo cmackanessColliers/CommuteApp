@@ -53,6 +53,7 @@ const MapComponent = () => {
   const nameField = useAppStateStore((state) => state.nameField);
   const setPrintingActive = useAppStateStore((state) => state.setPrintingActive);
   const employeeCountField = useAppStateStore((state) => state.employeeCountField);
+  const customSymbology = useAppStateStore((state) => state.customSymbology);
   const [chartImages, setChartImages] = useState(null)
   const mapRef = useRef(null)
   const siteLayerViewRef = useRef(null);
@@ -206,14 +207,14 @@ const MapComponent = () => {
       await new Promise(resolve => setTimeout(resolve, 500));
       const screenshot = await map.view.takeScreenshot({
         format: "png",
-        quality: 400
+        quality: 500
       });
       images.push({
         oid,
         dataUrl: screenshot.dataUrl
       });
     }
-    console.log("Captured images:", images);
+    // console.log("Captured images:", images);
     setImageArray(images)
     setPrintingActive(false)
     return images;
@@ -370,6 +371,9 @@ const MapComponent = () => {
         handleFeatureSelect(null)
       }
       if (baselineLayer) {
+        if (customSymbology) {
+          baselineLayer.renderer = customSymbology
+        }
         map?.map?.layers?.addMany([baselineLayer]);
         layerExtents.push(baselineLayer?.fullExtent);
         const featureLayerView = map?.view?.layerViews?.find((layerView) =>
@@ -405,6 +409,7 @@ const MapComponent = () => {
     baselineLayer,
     tradeAreaLayer,
     routeLayer,
+    customSymbology,
     handleLayerOrdering,
     selectedSite,
     handleFeatureSelect

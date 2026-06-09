@@ -82,17 +82,17 @@ function ReportContent() {
           )}
         </div>
         <div style={{width:"100%", height:"92%", display:"flex", flexDirection:"row"}}>
-          <div style={{display:"flex", flexDirection:"column", width:"100%"}}>
+          <div style={{flex: printingActive ? 1 : "1 1 50%", display:"flex", flexDirection:"column",}}>
             <MapComponent />
             {(!printingActive && barChartData) && (
-              <div style={{height:"50%", display:"flex", flexDirection:"column"}}>
+              <div style={{ flex: "1 1 50%", height:"50%", display:"flex", flexDirection:"column"}}>
                 <div style={{textAlign:"center", fontWeight:"bold", fontSize:"20px"}}>Average Travel Time and Distance By Site</div>
                 <BarChartStaging chartData={barChartData} />
               </div>
             )}
           </div>
           {!printingActive && (
-            <div style={{width:"50%", height:"100%",display:"flex", flexDirection:"column"}}>
+            <div style={{width:"40%", height:"100%",display:"flex", flexDirection:"column"}}>
               {configReady && (
                 <div style={{display:"flex", flexDirection:"column", height:"100%", gap:"10px"}}>
                   {baselineFeatures?.length && (

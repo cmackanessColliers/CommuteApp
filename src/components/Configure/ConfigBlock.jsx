@@ -27,6 +27,7 @@ import { generateCommuteAnalysis } from "../../helpers/CommuteAnalysis";
 import ConfigureTradeArea from "./CSVHandling/ConfigureTradeArea";
 import { EmpCommuteRenderer, EmpCommuteVisualVariables } from "../../map-symbols/MapSymbols";
 import { pieChartFormatting, barChartFormatting } from "../../helpers/utils";
+import { BaselineSymbolRenderer } from "../../helpers/BaselineSymbology";
 
 function ConfigBlock() {
   const map = useAppStateStore((state) => state.map)
@@ -40,7 +41,9 @@ function ConfigBlock() {
   const compareFeatures = useAppStateStore((state) => state.compareFeatures)
   const setCompareFeatures = useAppStateStore((state) => state.setCompareFeatures)
   const setRouteLayer = useAppStateStore((state) => state.setRouteLayer)
+  const setCustomSymbology = useAppStateStore((state) => state.setCustomSymbology)
   const routeLayer = useAppStateStore((state) => state.routeLayer)
+  const keyFeature = useAppStateStore((state) => state.keyFeature)
   const tradeAreaLayer = useAppStateStore((state) => state.tradeAreaLayer)
   const setTradeAreaLayer = useAppStateStore((state) => state.setTradeAreaLayer)
   const setPieChartData = useAppStateStore((state) => state.setPieChartData)
@@ -59,6 +62,30 @@ function ConfigBlock() {
   const [areaType, setAreaType] = useState("isochrone")
   const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(
+    function () {
+     if (keyFeature !== null && keyFeature !== undefined) {
+      setSymbologyGlobal()
+     }
+    },
+    [keyFeature]
+  );
+  
+  async function setSymbologyGlobal() {
+    if (baselineLayer) {
+      const oidField = "objectid"
+      const baselineInfo = {
+        oidField: oidField,
+        keyFeature: null,
+        keySymbolValue: null,
+      }
+      if (keyFeature !== null && keyFeature !== undefined) {
+        baselineInfo.keyFeature =  keyFeature[0].attributes.objectid
+      }
+      const customSymbol = await BaselineSymbolRenderer(baselineInfo)
+      setCustomSymbology(customSymbol)
+    }
+  }
 
   function handleCreateRoutes() {
     setIsLoading(true);
@@ -121,14 +148,12 @@ function ConfigBlock() {
       ) {
         setIsLoading(false);
         return;
-      }
-      console.log("Getting Routes");
-      
+      }      
         generateCommuteAnalysis(
           baselineFeatures,
           layer,
           "driving",
-          null,
+          keyFeature,
           employeeCountField,
           nameField || "name",
         ).then(([Facilitygraphics, EmpGraphics]) => {

@@ -107,6 +107,7 @@ const initialState = {
   barChartData: null,
   printingActive: false,
   employeeCountField: null,
+  customSymbology: null,
   fieldMappingDialogVisible: false, // To control visibility of field mapping dialog
   fieldMappingRole: null, // Which role (Site/Employee/etc) is currently doing field mapping
   fieldMappingResolver: null, // Function to resolve when field mapping is complete
@@ -133,6 +134,7 @@ const useAppStateStore = create(
       setPieChartData: (data) => set({pieChartData: data}),
       setBarChartData: (state) => set({barChartData: state}),
       setPrintingActive: (data) => set({printingActive: data}),
+      setCustomSymbology: (data) => set({customSymbology: data}),
       setEmpCommuteLayer: (layer) => {
         const loadLayer = async (layer) => {
           await layer?.load();

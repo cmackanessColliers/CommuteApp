@@ -12,8 +12,8 @@
 # production
 /build
 /dist
-/SubmarketUpdateApp
-/SubmarketUpdateApp.zip
+/CommuteApp
+/CommuteApp.zip
 
 # misc
 .DS_Store

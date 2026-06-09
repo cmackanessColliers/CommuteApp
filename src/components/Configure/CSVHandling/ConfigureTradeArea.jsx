@@ -120,7 +120,7 @@ function ConfigureTradeArea() {
                 <CalciteIcon icon="information" scale="s" id="useTradeAreaInfo"/>
             </CalciteLabel>  
             {useTradeArea && (
-              <div style={{textAlign:"center",color:"#000759", textAlign:"center", marginTop:"10px", marginBottom:"8px"}}>
+              <div style={{textAlign:"center",color:"#000759", marginTop:"10px", marginBottom:"8px"}}>
                 <CalciteBlock
                   heading="Configure Trade Area"
                   collapsible

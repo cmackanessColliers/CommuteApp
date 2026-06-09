@@ -6,12 +6,13 @@ import {
   CalciteDropdownItem,
   CalciteButton,
   CalciteInput,
-  CalciteBlock
+  CalciteChip
 } from "@esri/calcite-components-react";
 
 import { useState, useRef, useEffect } from "react";
 import useAppStateStore from "../../stores/AppStateStore";
 import PieChartStaging from "../Printing/PieChartStaging";
+import { formatter, intFormatter } from "../../helpers/utils";
 
 function CompFeatureList() {
   const baselineLayer = useAppStateStore((state) => state.baselineLayer);
@@ -22,11 +23,11 @@ function CompFeatureList() {
   const commuteGraphics = useAppStateStore((state) => state.commuteGraphics);
   const pieChartData = useAppStateStore((state) => state.pieChartData);
   const setSelectedSite = useAppStateStore((state) => state.setSelectedSite);
-  const selectedSite = useAppStateStore((state) => state.selectedSite);
+  const keyFeature = useAppStateStore((state) => state.keyFeature);
   const empCommuteLayer = useAppStateStore((state) => state.empCommuteLayer);
   const [renamingIndex, setRenamingIndex] = useState(null);
-  const [openIndex, setOpenIndex] = useState(null);
-  const [renameValue, setRenameValue] = useState("");
+  const [baselineValues, setBaselineValues] = useState(null);
+  const [resultFeatures, setResultFeatures] = useState([]);
   const highlightRef = useRef(null);
   
   useEffect(() => {
@@ -38,37 +39,27 @@ function CompFeatureList() {
     };
   }, []);
 
+  useEffect(() => {
+    async function getAndSetBaseline() {
+      const baselineVals = keyFeature?.map((feature) => 
+        resultFeatures?.find((resultFeature) => resultFeature?.objectid === feature?.attributes?.objectid)
+      )?.[0];
+      setBaselineValues(baselineVals);
+    }
+    getAndSetBaseline();
+  }, [keyFeature, resultFeatures]);
+
+  useEffect(() => {
+      const sortedCommuteGraphics = Array.isArray(commuteGraphics)
+        ? [...commuteGraphics].sort((a, b) => a.AverageCommuteTime - b.AverageCommuteTime)
+        : Object.values(commuteGraphics || {}).sort(
+            (a, b) => a.AverageCommuteTime - b.AverageCommuteTime
+          );
+      setResultFeatures(sortedCommuteGraphics)
+  }, [commuteGraphics]);
+
+
   
-  const sortedCommuteGraphics = Array.isArray(commuteGraphics)
-  ? [...commuteGraphics].sort((a, b) => a.AverageCommuteTime - b.AverageCommuteTime)
-  : Object.values(commuteGraphics || {}).sort(
-      (a, b) => a.AverageCommuteTime - b.AverageCommuteTime
-    );
-  
-  
-  async function removeFeature(feature, index) {
-    console.log(feature)
-    await baselineLayer.applyEdits({ deleteFeatures: [feature] });
-
-    const updatedFeatures = baselineFeatures.filter((_, i) => i !== index);
-    setBaselineFeatures(updatedFeatures);
-  }
-
-  async function renameFeature(feature, name, index) {
-    const updatedFeature = feature;
-    updatedFeature.attributes.name = name
-    console.log("updatedFeature", updatedFeature)
-    await baselineLayer.applyEdits({ updateFeatures: [updatedFeature] });
-
-    const updatedFeatures = baselineFeatures.map((f, i) =>
-      i === index ? updatedFeature : f
-    );
-
-    setBaselineFeatures(updatedFeatures);
-    setRenamingIndex(null);
-    setRenameValue("")
-  }
-
   
   async function handleHoverHighlight(oid, condition) {
     // Always clear first
@@ -111,7 +102,7 @@ function CompFeatureList() {
         }
       }}
     >
-      {sortedCommuteGraphics.map((feature, index) => (
+      {resultFeatures?.map((feature, index) => (
           <CalciteCard style={{width:"97%", marginInline:"auto"}}
             label={`${feature.objectid}`}
             id={`${feature.objectid}`}
@@ -126,10 +117,22 @@ function CompFeatureList() {
               handleHoverHighlight(null, "leave");
             }}
           >
-            <div slot="heading" style={{display:"flex", flexDirection:"column", justifyContent:"space-between"}}>  
+            <div slot="heading" style={{display:"flex", flexDirection:"row", gap:"10px"}}>  
               {renamingIndex !== index && (
                 <>
-                  <div style={{width:"70%", fontSize:"15px", fontWeight:"bold",}}>{feature[buildingField]}</div>
+                  <div style={{fontSize:"15px", fontWeight:"bold", marginTop:"1px"}}>{feature[buildingField]}</div>
+                  {(baselineValues && (baselineValues?.objectid === feature?.objectid)) && (
+                    <CalciteChip
+                      slot="footer-end"
+                      value="calcite chip"
+                      scale="s"
+                      appearance="solid"
+                      style={{ flexShrink: "3" }}
+                      kind="brand"
+                    >
+                      Baseline Site
+                    </CalciteChip>
+                  )}
                 </>
               )}
             </div>
@@ -140,11 +143,39 @@ function CompFeatureList() {
                     <tbody>
                       <tr>
                         <th style={{paddingTop:"5px", paddingBottom:"5px"}}>Avg Time</th>
-                        <td style={{paddingTop:"5px", paddingBottom:"5px"}}>{feature.AverageCommuteTime}</td>
+                        <td style={{paddingTop:"5px", paddingBottom:"5px"}}>
+                          <div style={{display:"flex", flexDirection:"column"}}>
+                            <span>{feature.AverageCommuteTime}</span>
+                            {feature?.CommuteTimeDifference !== null && (
+                              <>
+                                {feature?.CommuteTimeDifference > 0 && (
+                                  <span style={{fontSize:"10px", color:"red"}}>+{feature.CommuteTimeDifference} mi</span>
+                                )}
+                                {feature?.CommuteTimeDifference < 0 && (
+                                  <span style={{fontSize:"10px", color:"#1C54F4"}}>{(feature.CommuteTimeDifference)} mi</span>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                       <tr>
                         <th style={{paddingTop:"5px", paddingBottom:"5px"}}>Avg Dist</th>
-                        <td style={{paddingTop:"5px", paddingBottom:"5px"}}>{feature.AverageCommuteDist}</td>
+                        <td style={{paddingTop:"5px", paddingBottom:"5px"}}>
+                          <div style={{display:"flex", flexDirection:"column"}}>
+                            <span>{feature.AverageCommuteDist}</span>
+                            {feature?.CommuteDistDifference !== null && (
+                              <>
+                                {feature?.CommuteDistDifference > 0 && (
+                                  <span style={{fontSize:"10px", color:"red"}}>+{feature.CommuteDistDifference} mi</span>
+                                )}
+                                {feature?.CommuteDistDifference < 0 && (
+                                  <span style={{fontSize:"10px", color:"#1C54F4"}}>{(feature.CommuteDistDifference)} mi</span>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -173,7 +204,7 @@ function CompFeatureList() {
                     </tr>
                   </tbody>
                 </table> */}
-                <div style={{width:"70%", height:"175px", alignContent:"center", justifyContent:"center", marginTop:"-30px"}}>
+                <div style={{width:"70%", height:"175px", alignContent:"center", justifyContent:"center", marginTop:"-20px"}}>
                   <div style={{width:"100%", textAlign:"center", fontWeight:"bold", fontSize:"12px", padding:"10px", marginTop:"-20px"}}>Commuters Per Time Range</div>
                   <div style={{height:"110px"}}>
                     <PieChartStaging printChartData={pieChartData[feature.objectid]} />
