@@ -90,7 +90,7 @@ function CompFeatureList() {
   }
 
   return (
-    <CalciteCardGroup style={{height:"100%", width:"100%", marginInline:"auto"}}
+    <CalciteCardGroup style={{height:"100%", width:"100%", marginInline:"auto", marginTop:"4px"}}
       label="BaselineSites"
       selection-mode="single"
       onCalciteCardGroupSelect={(e) => {
