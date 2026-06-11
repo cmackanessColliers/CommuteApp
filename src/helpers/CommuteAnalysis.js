@@ -344,6 +344,15 @@ export async function generateCommuteAnalysis(
     Object.entries(sourceGraphic).map(([field,value]) => {
       BLDsiteLookup[sourceFeature].attributes[field] = value
     })
+    
+    
+    if (baselineFeature?.length > 0) {
+      if (sourceFeature === `BLD_${baselineFeature?.[0]?.attributes.objectid}`) {
+        BLDsiteLookup[sourceFeature].attributes["Baseline"] = "Baseline"
+      } else {
+        BLDsiteLookup[sourceFeature].attributes["Baseline"] = "Comparison"
+      }
+    }
     allIsoGraphics[OID] = BLDsiteLookup[sourceFeature].attributes;
     return outAttributes;
   };

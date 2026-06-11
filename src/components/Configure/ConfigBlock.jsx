@@ -72,7 +72,7 @@ function ConfigBlock() {
   );
   
   async function setSymbologyGlobal() {
-    if (baselineLayer) {
+    if (baselineLayer && keyFeature?.length) {
       const oidField = "objectid"
       const baselineInfo = {
         oidField: oidField,

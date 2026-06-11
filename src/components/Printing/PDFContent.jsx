@@ -25,6 +25,7 @@ export default function PDFContent({
     title: { 
       fontSize: 18, 
       fontWeight: 'bold',
+      padding:"10px"
     },
     subheader: {
       fontSize: 15,
@@ -75,11 +76,14 @@ export default function PDFContent({
             />
           </View>
           <View style={styles.header}>
-            <View>
+            <View style={{display:"flex", flexDirection:"row", gap:"10px"}}>
+              {(feature?.Baseline && feature?.Baseline === "Baseline") && (
+                <Text style={{backgroundColor:"#000759", borderRadius:"50px", color:"white", fontSize:"16px", padding:"10px", width:"1.6in", textAlign:"center"}}>Baseline Site</Text>
+              )}
               <Text style={styles.title}>{`${feature[buildingField]} Commute Report`}</Text>
             </View>
             <View>
-              <Image source={ColliersLogo} style={{height:"40px",width:"60px", position:"absolute", left:"90%", top:"-.4in", objectFit:"contain",}} />
+              <Image source={ColliersLogo} style={{height:"40px",width:"60px", position:"absolute", left:"90%", top:"-.55in", objectFit:"contain",}} />
             </View>
           </View>
           <View style={{height:"2.75in", width:"3in", backgroundColor:"white", border:"1px solid #aeafb6", position:"absolute", Zindex:"10", bottom:".1in", left:".1in"}}>
@@ -99,7 +103,7 @@ export default function PDFContent({
               </View>
             </View>
           </View>
-          <View style={{height:"2.25in", width:"2.35in", backgroundColor:"white", border:"1px solid #aeafb6", position:"absolute", Zindex:"10", bottom:".15in", left:"9.25in"}}>
+          <View style={{height:"2.6in", width:"2.35in", backgroundColor:"white", border:"1px solid #aeafb6", position:"absolute", Zindex:"10", bottom:".15in", left:"9.25in"}}>
             <View style={{display:"flex", flexDirection:"column", justifyContent:'center', gap:"2px", marginTop:"3px"}}>
               <View style={{ display:"flex", flexDirection:"column", marginBottom:"3px", textAlign:"center", fontWeight:"bold" }}>
                 <Text style={{fontSize:"7px"}}>Employee Commute Time Range</Text>
@@ -182,6 +186,11 @@ export default function PDFContent({
                   <Text style={{fontSize:"7px", marginLeft:'auto', marginRight:"auto", color:"#696969"}}>{`(${multiEmployeeDict.FifteenPlus.length} Zip Codes)`}</Text>
                 )}
               </View>
+            </View>
+            <View style={{height:".5px", width:"95%", marginLeft:"auto", marginRight:"auto", backgroundColor:"#000759", marginTop:"5px", marginBottom:"4px"}}></View>
+            <View style={{ display:"flex", flexDirection:"row", marginLeft:"5px" }}>
+              <View style={{height:"10px", width:"10px", backgroundColor:"#000759", borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+              <Text style={{fontSize:"10px"}}>{feature[buildingField]}</Text>
             </View>
           </View>
         </Page>

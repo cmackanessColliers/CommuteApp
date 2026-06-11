@@ -54,6 +54,7 @@ const MapComponent = () => {
   const setPrintingActive = useAppStateStore((state) => state.setPrintingActive);
   const employeeCountField = useAppStateStore((state) => state.employeeCountField);
   const customSymbology = useAppStateStore((state) => state.customSymbology);
+  const keyFeature = useAppStateStore((state) => state.keyFeature);
   const [chartImages, setChartImages] = useState(null)
   const mapRef = useRef(null)
   const siteLayerViewRef = useRef(null);
@@ -84,12 +85,17 @@ const MapComponent = () => {
             }
           })
         } 
+        const sortedCommuteGraphics = Array.isArray(commuteGraphics)
+        ? [...commuteGraphics].sort((a, b) => a.AverageCommuteTime - b.AverageCommuteTime)
+        : Object.values(commuteGraphics || {}).sort(
+            (a, b) => a.AverageCommuteTime - b.AverageCommuteTime
+          );
         console.log(
           "title", "Commute Analysis", 
           "baselineFeatures", baselineFeatures, 
           "imageArray", imageArray, 
           "empCommuteFeatures", empCommuteFeatures, 
-          "commuteGraphics", commuteGraphics, 
+          "commuteGraphics", sortedCommuteGraphics, 
           "buildingField", buildingField, 
           "nameField", nameField,
           "countField", employeeCountField,
@@ -371,7 +377,7 @@ const MapComponent = () => {
         handleFeatureSelect(null)
       }
       if (baselineLayer) {
-        if (customSymbology) {
+        if (keyFeature && customSymbology) {
           baselineLayer.renderer = customSymbology
         }
         map?.map?.layers?.addMany([baselineLayer]);
