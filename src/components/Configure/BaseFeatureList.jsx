@@ -145,14 +145,14 @@ function CompFeatureList() {
                         <th style={{paddingTop:"5px", paddingBottom:"5px"}}>Avg Time</th>
                         <td style={{paddingTop:"5px", paddingBottom:"5px"}}>
                           <div style={{display:"flex", flexDirection:"column"}}>
-                            <span>{feature.AverageCommuteTime}</span>
+                            <span>{feature.AverageCommuteTime} min</span>
                             {feature?.CommuteTimeDifference !== null && (
                               <>
                                 {feature?.CommuteTimeDifference > 0 && (
-                                  <span style={{fontSize:"10px", color:"red"}}>+{feature.CommuteTimeDifference} mi</span>
+                                  <span style={{fontSize:"10px", color:"red"}}>+{feature.CommuteTimeDifference} min</span>
                                 )}
                                 {feature?.CommuteTimeDifference < 0 && (
-                                  <span style={{fontSize:"10px", color:"#1C54F4"}}>{(feature.CommuteTimeDifference)} mi</span>
+                                  <span style={{fontSize:"10px", color:"#1C54F4"}}>{(feature.CommuteTimeDifference)} min</span>
                                 )}
                               </>
                             )}
@@ -163,7 +163,7 @@ function CompFeatureList() {
                         <th style={{paddingTop:"5px", paddingBottom:"5px"}}>Avg Dist</th>
                         <td style={{paddingTop:"5px", paddingBottom:"5px"}}>
                           <div style={{display:"flex", flexDirection:"column"}}>
-                            <span>{feature.AverageCommuteDist}</span>
+                            <span>{feature.AverageCommuteDist} mi</span>
                             {feature?.CommuteDistDifference !== null && (
                               <>
                                 {feature?.CommuteDistDifference > 0 && (
