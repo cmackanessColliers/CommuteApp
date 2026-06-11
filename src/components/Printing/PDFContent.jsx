@@ -187,9 +187,15 @@ export default function PDFContent({
                 )}
               </View>
             </View>
-            <View style={{height:".5px", width:"95%", marginLeft:"auto", marginRight:"auto", backgroundColor:"#000759", marginTop:"5px", marginBottom:"4px"}}></View>
+            <View style={{height:".5px", width:"95%", marginLeft:"auto", marginRight:"auto", backgroundColor:"#000759", marginTop:"7px", marginBottom:"4px"}}></View>
             <View style={{ display:"flex", flexDirection:"row", marginLeft:"5px" }}>
-              <View style={{height:"10px", width:"10px", backgroundColor:"#000759", borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+              
+              {(feature?.Baseline && feature?.Baseline === "Baseline") && (
+                <View style={{height:"10px", width:"10px", backgroundColor:"#1C54F4", transform:"rotate(45deg)", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+              )}
+              {(!feature?.Baseline || feature?.Baseline !== "Baseline") && (
+                <View style={{height:"10px", width:"10px", backgroundColor:"#000759", borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+              )}
               <Text style={{fontSize:"10px"}}>{feature[buildingField]}</Text>
             </View>
           </View>
