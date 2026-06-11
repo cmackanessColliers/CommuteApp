@@ -18,11 +18,46 @@ const TRANSPARENCY75 = "BF";
 const TRANSPARENCY50 = "80";
 const TRANSPARENCY25 = "40";
 
-const BarChartStaging = ({chartData}) => {
+const BarChartStaging = ({chartData, selectedSiteName}) => {
 
   const colorArray = [DEEPBLUE, MEDIUMBLUE, DARKBLUE, LIGHTBLUE, PALEBLUE, ORANGE, MEDIUMBLUEGREY, DARKBLUEGREY, LIGHTBLUEGREY, PALEBLUEGREY, COLLIERSLIGHTBLUE, TEAL]
   const [chartConfig, setChartConfig] = useState(null)  
   const highlightColor = COLLIERSYELLOW;
+
+  
+  function makeIndexedStyles({
+    labels,
+    highlightIndex,
+    baseColor,
+    dimAlpha = TRANSPARENCY50,
+    highlightFill = COLLIERSYELLOW,
+    highlightBorder = "#1d1d1d",
+    highlightBorderWidth = 3,
+    defaultBorderWidth = 1,
+  }) {
+    const count = labels.length;
+
+    const backgroundColor = Array.from({ length: count }, (_, idx) => {
+      if (highlightIndex === null) return baseColor;
+      return idx === highlightIndex
+        ? highlightFill
+        : `${baseColor}${dimAlpha}`;
+    });
+
+    const borderColor = Array.from({ length: count }, (_, idx) => {
+      if (highlightIndex === null) return baseColor;
+      return idx === highlightIndex ? highlightBorder : baseColor;
+    });
+
+    const borderWidth = Array.from({ length: count }, (_, idx) =>
+      highlightIndex !== null && idx === highlightIndex
+        ? highlightBorderWidth
+        : defaultBorderWidth
+    );
+
+    return { backgroundColor, borderColor, borderWidth };
+  }
+
 
   useEffect(() => {
     if (!chartData) return;
@@ -31,6 +66,19 @@ const BarChartStaging = ({chartData}) => {
     const borderWidth = 1;
     const distData = (chartData.AvgDist && chartData.AvgDist.data) || [];
     const timeData = (chartData.AvgTime && chartData.AvgTime.data) || [];
+    const highlightIndex =
+          selectedSiteName ? labels.indexOf(selectedSiteName) : -1;
+    const distStyles = makeIndexedStyles({
+      labels,
+      highlightIndex,
+      baseColor: DEEPBLUE,
+    });
+
+    const timeStyles = makeIndexedStyles({
+      labels,
+      highlightIndex,
+      baseColor: MEDIUMBLUE,
+    });
 
     const datasets = [
       {
@@ -38,29 +86,30 @@ const BarChartStaging = ({chartData}) => {
         label: "Average Commute Distance",
         data: distData,
         yAxisID: "y",
-        borderColor: DEEPBLUE,
-        backgroundColor: DEEPBLUE,
-        borderWidth: borderWidth,
-        // Optional: add rounded corners to make the highlight pop
+        ...distStyles,
         borderRadius: 3,
-      }, 
+        hoverBackgroundColor: distStyles.backgroundColor,
+        hoverBorderColor: distStyles.borderColor,
+        hoverBorderWidth: distStyles.borderWidth,
+      },
       {
         type: "bar",
         label: "Average Commute Time",
         data: timeData,
         yAxisID: "y2",
-        borderColor: MEDIUMBLUE,
-        backgroundColor: MEDIUMBLUE,
-        borderWidth: borderWidth,
-        // Optional: add rounded corners to make the highlight pop
+        ...timeStyles,
         borderRadius: 3,
-      }
+        hoverBackgroundColor: timeStyles.backgroundColor,
+        hoverBorderColor: timeStyles.borderColor,
+        hoverBorderWidth: timeStyles.borderWidth,
+      },
     ];
+
     setChartConfig({
       labels,
       datasets,
     });
-  }, [chartData]);
+  }, [chartData, selectedSiteName]);
 
 
 
@@ -75,6 +124,7 @@ const BarChartStaging = ({chartData}) => {
 
 BarChartStaging.propTypes = {
   chartData: PropTypes.object.isRequired,
+  selectedSiteName: PropTypes.string.isRequired,
 };
 
 export default BarChartStaging;

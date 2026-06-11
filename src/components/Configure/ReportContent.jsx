@@ -49,6 +49,7 @@ function ReportContent() {
   const setConfigReady = useAppStateStore((state) => state.setConfigReady)
   const commuteGraphics = useAppStateStore((state) => state.commuteGraphics)
   const barChartData = useAppStateStore((state) => state.barChartData)
+  const selectedSiteName = useAppStateStore((state) => state.selectedSiteName)
   const setCommuteGraphics = useAppStateStore((state) => state.setCommuteGraphics)
   const {
     setSiteFileName,
@@ -87,7 +88,7 @@ function ReportContent() {
             {(!printingActive && barChartData) && (
               <div style={{ flex: "1 1 50%", height:"50%", display:"flex", flexDirection:"column"}}>
                 <div style={{textAlign:"center", fontWeight:"bold", fontSize:"20px"}}>Average Travel Time and Distance By Site</div>
-                <BarChartStaging chartData={barChartData} />
+                <BarChartStaging chartData={barChartData} selectedSiteName={selectedSiteName}/>
               </div>
             )}
           </div>

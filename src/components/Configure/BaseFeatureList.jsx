@@ -23,6 +23,7 @@ function CompFeatureList() {
   const commuteGraphics = useAppStateStore((state) => state.commuteGraphics);
   const pieChartData = useAppStateStore((state) => state.pieChartData);
   const setSelectedSite = useAppStateStore((state) => state.setSelectedSite);
+  const setSelectedSiteName = useAppStateStore((state) => state.setSelectedSiteName);
   const keyFeature = useAppStateStore((state) => state.keyFeature);
   const empCommuteLayer = useAppStateStore((state) => state.empCommuteLayer);
   const [renamingIndex, setRenamingIndex] = useState(null);
@@ -97,16 +98,19 @@ function CompFeatureList() {
         if (e.target.selectedItems?.length) {
           // console.log(e.target.selectedItems[0].label)
           setSelectedSite(e.target.selectedItems[0].label)
+          console.log("Selection Name", e.target.selectedItems[0].id)
+          setSelectedSiteName(e.target.selectedItems[0].id)
         } else {
           setSelectedSite(null)
+          setSelectedSiteName(null)
         }
       }}
     >
       {resultFeatures?.map((feature, index) => (
           <CalciteCard style={{width:"97%", marginInline:"auto"}}
             label={`${feature.objectid}`}
-            id={`${feature.objectid}`}
-            key={`${feature.objectid}`}
+            id={`${feature?.[buildingField]}`}
+            key={`${feature?.objectid}`}
             onMouseEnter={() => {
               handleHoverHighlight(
                 feature?.objectid,

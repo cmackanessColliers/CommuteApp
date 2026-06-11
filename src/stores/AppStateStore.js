@@ -102,6 +102,7 @@ const initialState = {
   searchString: "",
   setupComplete: false,
   selectedSite: null, 
+  selectedSiteName: null,
   imageArray: null,
   pieChartData: null,
   barChartData: null,
@@ -242,6 +243,7 @@ const useAppStateStore = create(
       },
       setEmployeeCountField: (field) => set({ employeeCountField: field }),
       setSelectedSite: (site) => set({selectedSite: site}),
+      setSelectedSiteName: (site) => set({selectedSiteName: site}),
       setImageArray: (images) => set({imageArray: images}),
       setFieldMappingDialogVisible: (visible, role = null) => {
         console.log(
