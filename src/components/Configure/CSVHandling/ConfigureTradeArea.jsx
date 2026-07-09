@@ -105,7 +105,7 @@ function ConfigureTradeArea() {
           overlayPositioning="fixed"
           placement="right-start"
         >
-          <span>Optional - Generate a trade area around a baseline site</span>
+          <span>Optional - Generate a drive time area around a baseline site</span>
         </CalciteTooltip>
         <CalciteListItem id="TradeAreaListItem" scale="s">
           <div slot="content" style={{ display:"flex", flexDirection:"column", paddingTop:"15px", paddingBottom:"5px"}}>
@@ -122,7 +122,7 @@ function ConfigureTradeArea() {
             {useTradeArea && (
               <div style={{textAlign:"center",color:"#000759", marginTop:"10px", marginBottom:"8px"}}>
                 <CalciteBlock
-                  heading="Configure Trade Area"
+                  heading="Set up Drive Times"
                   collapsible
                   expanded = {configOpen}
                   icon-start="map"

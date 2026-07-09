@@ -246,10 +246,11 @@ function ConfigBlock() {
   return (
     <>
       <CalciteList style={{width:"100%", height:"100%",display:"flex", flexDirection:"column", overflowY:"auto", padding:"10px", boxSizing:"border-box"}}>
-        <CalciteListItem style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
+        {DestinationOpen && (
+          <CalciteListItem style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
           <CalciteBlock
             slot="content"
-            heading="Add Destination Sites"
+            heading="Add Potential Sites"
             collapsible
             expanded={DestinationOpen}
             icon-start="3d-building"
@@ -267,30 +268,41 @@ function ConfigBlock() {
             )}
           </CalciteBlock>
         </CalciteListItem>
-        <CalciteListItem style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
-          <CalciteBlock
-            slot="content"
-            heading="Add Origin Sites"
-            collapsible
-            expanded={!DestinationOpen}
-            icon-start="3d-building"
-          >
-            <AddEmployees/> 
-          </CalciteBlock>
-          {!DestinationOpen && baselineLayer && buildingField && (
-            <>
-              <div slot="content" style={{display:"flex", flexDirection:"row", justifyContent:"space-between", alignItems:"center", marginTop:"10px"}}>
-                <CalciteLabel layout="inline" style={{marginInline:"auto"}} id="LaborTypeCheckbox">
-                  Adjust Commute Time Symbology
-                  <CalciteCheckbox style={{ boxShadow: "var(--optimal-shadow)"}} checked={useCustomCommuteSymbol} onCalciteCheckboxChange={() => {setUseCustomCommuteSymbol(!useCustomCommuteSymbol)}}></CalciteCheckbox>
-                </CalciteLabel>
-              </div>
-              {useCustomCommuteSymbol && (
-                  <SetCustomSymbology />
-              )}
-            </>
-          )}
-        </CalciteListItem>
+      )}
+        {!DestinationOpen && (
+          <CalciteListItem style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
+            <div slot="content">
+              <CalciteButton
+                width="full"
+                onClick={() => setDestinationOpen(!DestinationOpen)}
+              >
+                Back
+              </CalciteButton>
+            </div>
+            <CalciteBlock
+              slot="content"
+              heading="Add Origin Sites"
+              collapsible
+              expanded={!DestinationOpen}
+              icon-start="3d-building"
+            >
+              <AddEmployees/> 
+            </CalciteBlock>
+            {!DestinationOpen && baselineLayer && buildingField && (
+              <>
+                <div slot="content" style={{display:"flex", flexDirection:"row", justifyContent:"space-between", alignItems:"center", marginTop:"10px"}}>
+                  <CalciteLabel layout="inline" style={{marginInline:"auto"}} id="LaborTypeCheckbox">
+                    Adjust Commute Time Symbology
+                    <CalciteCheckbox style={{ boxShadow: "var(--optimal-shadow)"}} checked={useCustomCommuteSymbol} onCalciteCheckboxChange={() => {setUseCustomCommuteSymbol(!useCustomCommuteSymbol)}}></CalciteCheckbox>
+                  </CalciteLabel>
+                </div>
+                {useCustomCommuteSymbol && (
+                    <SetCustomSymbology />
+                )}
+              </>
+            )}
+          </CalciteListItem>
+        )}
       </CalciteList>
       <div slot="footer" style={{marginTop:"5px", marginBottom:"5px", marginInline:"auto"}}>
         <CalciteButton 
