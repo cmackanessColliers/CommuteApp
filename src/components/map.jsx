@@ -9,6 +9,7 @@ import "@arcgis/map-components/components/arcgis-basemap-gallery";
 import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter.js";
 import Query from "@arcgis/core/rest/support/Query.js";
 import SimpleRenderer from "@arcgis/core/renderers/SimpleRenderer";
+import { generateBarChartData, generatePieChartData } from "../helpers/utils";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { employeeSymbol, featureReductionSettings } from "../map-symbols/MapSymbols";
 import { CalciteButton } from "@esri/calcite-components-react";
@@ -55,6 +56,8 @@ const MapComponent = () => {
   const employeeCountField = useAppStateStore((state) => state.employeeCountField);
   const customSymbology = useAppStateStore((state) => state.customSymbology);
   const keyFeature = useAppStateStore((state) => state.keyFeature);
+  const commuteTimeSymbol = useAppStateStore((state) => state.commuteTimeSymbol);
+  const barChartData = useAppStateStore((state) => state.barChartData)
   const [chartImages, setChartImages] = useState(null)
   const mapRef = useRef(null)
   const siteLayerViewRef = useRef(null);
@@ -112,7 +115,8 @@ const MapComponent = () => {
           nameField: nameField,
           countField: employeeCountField || null,
           multiEmployeeDict: multiEmployeeDict,
-          chartImages: chartImages
+          chartImages: chartImages,
+          commuteTimeSymbol: commuteTimeSymbol
         })
       })
     }
@@ -120,12 +124,15 @@ const MapComponent = () => {
 
     useEffect(() => {
     const run = async () => {
-      if (!pieChartData) return;
+      if (!pieChartData || !barChartData) return;
       const newImages = {};
       for (const key of Object.keys(pieChartData)) {
         const cfg = buildChartConfig(pieChartData, key);
-        newImages[`${key}`] = await generateChartDataUrl(cfg);
+        newImages[`${key}`] = await generatePieChartData(cfg);
       }
+      const barChartImage = await generateBarChartData(barChartData, "barChart", 800, 400);
+      newImages["Summary"] = barChartImage
+      console.log("newImages", newImages)
       setChartImages(newImages);
     };
     run();
@@ -145,51 +152,6 @@ const MapComponent = () => {
     return data
   }
 
-   const generateChartDataUrl = async (chartConfig, width = 500, height = 500) => {
-    if (!chartConfig) return null;
-  
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-
-    const chart = new ChartJS(canvas.getContext('2d'), {
-      type: 'pie',
-      data: chartConfig,
-      options: {
-        responsive: false,
-        maintainAspectRatio: false,
-        layout: { padding: 10 },
-        animation: false,
-        plugins: {
-          tooltip: { enabled: true },
-          legend: {
-            position: "right",
-            labels: {
-              boxWidth: 10,
-              font: {size:23},
-              filter: (legendItem, data) => {
-                return data.datasets[0].data[legendItem.index] !== 0;
-              }
-            },
-          },
-          datalabels: {
-            color: "#fff",
-            display: (context) => {
-              const value = context.dataset.data[context.dataIndex];
-              return value !== 0;   // ✅ hide labels when value is 0
-            },
-            font: { weight: "bold", size: 30 }
-          },
-        },
-      },
-    });
-
-    await new Promise(requestAnimationFrame); // ensure first draw completed
-    const dataUrl = canvas.toDataURL('image/png', 1.0);
-    chart.destroy();
-    return dataUrl;
-  };
-  
   async function getFeatures(layer) {
     const query = layer.createQuery();
     query.where = "1=1";

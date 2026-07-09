@@ -9,6 +9,39 @@ import {
   outboundSymbol,
 } from "../map-symbols/MapSymbols";
 import useAppStateStore from "../stores/AppStateStore";
+
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
+ChartJS.register(ChartDataLabels);
+
+import {
+  Chart as ChartJS,
+  ArcElement, 
+  BarController,
+  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Filler,
+  Tooltip,
+  Legend,
+} from "chart.js";
+ChartJS.register(
+  ArcElement,
+  BarController,
+  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Filler,
+  Tooltip,
+  Legend,
+);
+
 let Graphic, FeatureLayer, CSVLayer, locator, esriRequest;
 
 function toProperCase(str) {
@@ -499,10 +532,10 @@ async function preprocessCSV(file) {
   return new File([cleanedCsv], file.name, { type: "text/csv" });
 }
 
-async function pieChartFormatting(commuteGraphics) {
+async function pieChartFormatting(commuteGraphics, commuteTimeSymbol) {
   const pieChartDict = {}
-  const timeBins = ["<30 mins", "31-45 mins", "46-60 mins", "61-90 mins", "91-120 mins", "121-3hrs"]
-  const barColors = ["#2AB6A9", "#1C54F4", "#4D93FF", "#9C45AE", "#FA6609", "#ED1B34"]
+  const timeBins = commuteTimeSymbol.map((bin) => bin.time)
+  const barColors = commuteTimeSymbol.map((bin) => bin.color)
   Object.values(commuteGraphics).forEach((feature) => {
     pieChartDict[feature.objectid] = {
       yValues: [
@@ -537,6 +570,214 @@ async function barChartFormatting(commuteGraphics, buildingName) {
   return barChartDict
 }
 
+function makeIndexedStyles({
+    labels,
+    highlightIndex,
+    baseColor,
+    dimAlpha = "80",
+    highlightFill = "#FFD400",
+    highlightBorder = "#FFD400",
+    highlightBorderWidth = 3,
+    defaultBorderWidth = 1,
+  }) {
+    const count = labels.length;
+
+    const backgroundColor = Array.from({ length: count }, (_, idx) => {
+      if (highlightIndex === null) return baseColor;
+      return idx === highlightIndex
+        ? highlightFill
+        : `${baseColor}${dimAlpha}`;
+    });
+
+    const borderColor = Array.from({ length: count }, (_, idx) => {
+      if (highlightIndex === null) return baseColor;
+      return idx === highlightIndex ? highlightBorder : baseColor;
+    });
+
+    const borderWidth = Array.from({ length: count }, (_, idx) =>
+      highlightIndex !== null && idx === highlightIndex
+        ? highlightBorderWidth
+        : defaultBorderWidth
+    );
+
+    return { backgroundColor, borderColor, borderWidth };
+  }
+
+const generatePieChartData = async (chartConfig, width = 500, height = 500) => {
+  if (!chartConfig) return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+
+  const chart = new ChartJS(canvas.getContext('2d'), {
+    type: 'pie',
+    data: chartConfig,
+    options: {
+      responsive: false,
+      maintainAspectRatio: false,
+      layout: { padding: 10 },
+      animation: false,
+      plugins: {
+        tooltip: { enabled: true },
+        legend: {
+          position: "right",
+          labels: {
+            boxWidth: 10,
+            font: {size:23},
+            filter: (legendItem, data) => {
+              return data.datasets[0].data[legendItem.index] !== 0;
+            }
+          },
+        },
+        datalabels: {
+          color: "#fff",
+          display: (context) => {
+            const value = context.dataset.data[context.dataIndex];
+            return value !== 0;   // ✅ hide labels when value is 0
+          },
+          font: { weight: "bold", size: 30 }
+        },
+      },
+    },
+  });
+
+  await new Promise(requestAnimationFrame); // ensure first draw completed
+  const dataUrl = canvas.toDataURL('image/png', 1.0);
+  chart.destroy();
+  return dataUrl;
+};
+
+const generateBarChartData = async (chartData, width = 800, height = 500) => {
+  console.log("chartData", chartData)
+  if (!chartData) return null;
+  const labels = chartData.AvgDist.labels || [];
+
+  const borderWidth = 1;
+  const distData = (chartData.AvgDist && chartData.AvgDist.data) || [];
+  const timeData = (chartData.AvgTime && chartData.AvgTime.data) || [];
+  const highlightIndex = null
+  const distStyles = makeIndexedStyles({
+    labels,
+    highlightIndex,
+    baseColor: "#000759",
+  });
+
+  const timeStyles = makeIndexedStyles({
+    labels,
+    highlightIndex,
+    baseColor: "#1C54F4",
+  });
+
+  const datasets = [
+    {
+      type: "bar",
+      label: "Average Commute Distance",
+      data: distData,
+      yAxisID: "y",
+      ...distStyles,
+      borderRadius: 3,
+      hoverBackgroundColor: distStyles.backgroundColor,
+      hoverBorderColor: distStyles.borderColor,
+      hoverBorderWidth: distStyles.borderWidth,
+    },
+    {
+      type: "bar",
+      label: "Average Commute Time",
+      data: timeData,
+      yAxisID: "y2",
+      ...timeStyles,
+      borderRadius: 3,
+      hoverBackgroundColor: timeStyles.backgroundColor,
+      hoverBorderColor: timeStyles.borderColor,
+      hoverBorderWidth: timeStyles.borderWidth,
+    },
+  ];
+  const chartConfig = { labels, datasets, }
+  const canvas = document.createElement('canvas');
+  canvas.width = 1400;
+  canvas.height = 400;
+
+  const chart = new ChartJS(canvas.getContext('2d'), {
+    type: "bar",
+    data: chartConfig,
+    options: {
+      animation:false,
+      maintainAspectRatio: true,
+      responsive: false,
+      layout: {
+        padding: 10
+      },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxHeight:'2'
+          }
+        },
+        datalabels: {
+          color: "#ffffff",
+          font: {
+            size: 10
+          },
+          display:true
+        }
+      },
+      scales: {
+        y: {
+          type: 'linear',
+          position: 'left',
+          title: {
+            display: true, 
+            font:{
+              size: 14, 
+              weight:"bold"
+            },
+            text: "Distance (mi)"
+          }
+        },
+        y2: {
+          type: 'linear',
+          position: 'right',
+          title: {
+            display: true, 
+            font:{
+              size: 14, 
+              weight:"bold"
+            },
+            text: "Time (min)"
+          },
+          grid: {
+            display: false,
+            drawOnChartArea: false,
+            drawBorder: false
+          }
+        }
+      }
+    },
+  });
+  // console.log("chart", chart)
+
+  // console.log("canvas width", canvas.width);
+  // console.log("canvas height", canvas.height);
+  // console.log("datasets", datasets);
+  
+  console.log(
+    chart.getDatasetMeta(0).data.map(bar => bar.$context.parsed)
+  );
+
+  console.log(
+    chart.getDatasetMeta(1).data.map(bar => bar.$context.parsed)
+  );
+
+
+  await new Promise(requestAnimationFrame); // ensure first draw completed
+  const dataUrl = canvas.toDataURL('image/png', 1.0);
+  chart.destroy();
+  // console.log("bar Data URL", dataUrl)
+  return dataUrl;
+};
+
 export {
   toProperCase,
   numFormatter,
@@ -550,4 +791,6 @@ export {
   preprocessCSV,
   pieChartFormatting,
   barChartFormatting,
+  generatePieChartData,
+  generateBarChartData
 };

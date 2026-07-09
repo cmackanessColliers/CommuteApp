@@ -41,6 +41,8 @@ const nonPersistedKeys = [
   "pieChartData",
   "barChartData",
   "printingActive", 
+  "useCustomCommuteSymbol",
+  "commuteTimeSymbol"
 ];
 
 const featureLayerStateKeys = [
@@ -113,6 +115,45 @@ const initialState = {
   fieldMappingRole: null, // Which role (Site/Employee/etc) is currently doing field mapping
   fieldMappingResolver: null, // Function to resolve when field mapping is complete
   fieldMappingData: null, // Data passed to the field mapping dialog
+  commuteTimeSymbol: [
+    {
+      time: "30 mins or less",
+      color: "#2AB6A9",
+      minTime: 0,
+      maxTime: 30
+    },
+    {
+      time: "31 to 45 mins",
+      color: "#1C54F4",
+      minTime: 31,
+      maxTime: 45
+    },
+    {
+      time: "46 to 60 mins",
+      color: "#4D93FF",
+      minTime: 46,
+      maxTime: 60
+    },
+    {
+      time: "61 to 90 mins",
+      color: "#9C45AE",
+      minTime: 61,
+      maxTime: 90
+    },
+    {
+      time: "91 to 120 mins",
+      color: "#FA6609",
+      minTime: 91,
+      maxTime: 120
+    },
+    {
+      time: "121 to 3 hours",
+      color: "#ED1B34",
+      minTime: 121,
+      maxTime: 180
+    }
+  ],
+  useCustomCommuteSymbol: false, 
 };
 
 const useAppStateStore = create(
@@ -123,6 +164,8 @@ const useAppStateStore = create(
       setMap: (map) => {
         set({ map: map });
       },
+      setCommuteTimeSymbol: (symbols) => set({ commuteTimeSymbol: symbols }),
+      setUseCustomCommuteSymbol: (useCustom) => set({ useCustomCommuteSymbol: useCustom }),
       setConfigReady: (bool) => set({ configReady: bool }),
       setMapAvailable: (available) => set({ mapAvailable: available }),
       setMapInteraction: (interaction) => set({ mapInteraction: interaction }),

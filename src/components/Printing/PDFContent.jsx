@@ -3,8 +3,9 @@ import PropTypes from "prop-types";
 import { Page, Text, View, Document, Image, Font, StyleSheet, PDFViewer } from '@react-pdf/renderer';
 import {Table, TR, TH, TD} from '@ag-media/react-pdf-table';
 import ColliersLogo from "../../images/ColliersLogo.png"
+import SkyView from "../../images/CitySkyView.png"
 import { formatter, intFormatter, nFormatter, negativeToParentheses, numFormatter } from "../../helpers/utils";
-
+import { PDFDownloadLink } from '@react-pdf/renderer';
 
 
 export default function PDFContent({ 
@@ -16,16 +17,19 @@ export default function PDFContent({
   nameField, 
   countField,
   multiEmployeeDict,
-  chartImages
+  chartImages,
+  commuteTimeSymbol
 }) {  
 
   const styles = StyleSheet.create({
-    page: { backgroundColor: '#ffffff', color:"#000759", flexDirection: 'column' },
-    header: { position:"absolute", top:".15in", left:"0.15in", width:"100%", Zindex:"10"},
+    page: { backgroundColor: '#ffffff', color:"#000759", flexDirection: 'column', border:"1px solid white" },
+    header: { position:"absolute", width:"100%", Zindex:"10", backgroundColor:"#25408F"},
     title: { 
       fontSize: 18, 
       fontWeight: 'bold',
-      padding:"10px"
+      padding:"10px",
+      color:"white",
+      top:"4px"
     },
     subheader: {
       fontSize: 15,
@@ -47,10 +51,11 @@ export default function PDFContent({
       width:"100.5%",
     },  
     tableBody: {
-      fontSize: 13,
-      padding: "2px",
+      fontSize: 10,
+      padding: "5px",
       border: "1px solid #000759",
-      textAlign:"center"
+      textAlign:"center",
+      justifyContent:"center"
     },
     tableRow: {
       padding:"0px", 
@@ -67,26 +72,58 @@ export default function PDFContent({
   // Create Document Component
   const MyDocument = () => (
     <Document>
+      <Page size="A4" orientation='landscape'>
+        <View style={{position:"absolute", height:"7in", width:"4in", backgroundColor:"#000759", Zindex:"9999", left:".5in", display:"flex"}}>
+          <View style={{width:"93%", height:"125%", top:"-.2in", border:"1.25px solid white", left:"3.5%"}}>
+            <View style={{display:"flex", position:"absolute", top:"2.5in", flexDirection:"column", color:"white", gap:"15px"}}>
+              <View style={{left:".3in",}}>
+                <Text style={{textAlign:"center", fontSize:"14px"}}>June 2026</Text>
+              </View>
+              <View style={{left:".3in", marginBottom:"2px"}}>
+                <Text style={{fontSize:"35px"}}>Commuter Analysis</Text>
+              </View>
+              <View style={{left:".3in",marginBottom:"10px"}}>
+                <Text style={{fontSize:"14px", color:"#9becf7" }}>Colliers Research</Text>
+              </View>
+              <View style={{left:".3in", marginTop:"5px"}}>
+                <Image
+                  source={ColliersLogo}
+                  style={{ width: "100px", height: "80px", objectFit:"contain"}}
+                />
+              </View>
+            </View>
+          </View>
+          <View style={{ position:"absolute", bottom:".02in", height:"20px", width:"1.5in", textAlign:"center", backgroundColor:"#000759", left:".5in"}}>
+            <Text style={{color:"white", fontSize:"10px"}}>Accelerating Success</Text>
+          </View>
+        </View>
+        <View style={{ height:"99.9%", width:"100%", alignSelf:"center", zIndex:"8"}}>
+          <Image
+            source={SkyView}
+            style={{ width: "100%", height: "100%", objectFit:"cover"}}
+          />
+        </View>
+      </Page>
       {Object.values(commuteGraphics).map((feature, index) => (
         <Page size="A4" orientation='landscape' style={styles.page} key={index}>
-          <View style={{position:"absloute", height:"100%", width:"100%", alignSelf:"center", backgroundColor:"green"}}>
+          <View style={{position:"absolute", height:"99.8%", width:"100%", alignSelf:"center"}}>
             <Image
               source={imageArray.find(img => img?.oid === feature.objectid).dataUrl}
               style={{ width: "100%", height: "100%", objectFit:"cover"}}
             />
           </View>
           <View style={styles.header}>
-            <View style={{display:"flex", flexDirection:"row", gap:"10px"}}>
+            <View style={{display:"flex", flexDirection:"row", gap:"10px", backgroundColor:"#25408F"}}>
               {(feature?.Baseline && feature?.Baseline === "Baseline") && (
-                <Text style={{backgroundColor:"#000759", borderRadius:"50px", color:"white", fontSize:"16px", padding:"10px", width:"1.6in", textAlign:"center"}}>Baseline Site</Text>
+                <Text style={{backgroundColor:"#000759", borderRadius:"50px", color:"white", border:"1.5px solid white", fontSize:"14px", padding:"10px", width:"1.75in", textAlign:"center", top:"6px", left:"3px", height:".5in"}}>Baseline Site</Text>
               )}
               <Text style={styles.title}>{`${feature[buildingField]} Commute Report`}</Text>
             </View>
-            <View>
-              <Image source={ColliersLogo} style={{height:"40px",width:"60px", position:"absolute", left:"90%", top:"-.55in", objectFit:"contain",}} />
+            <View style={{display:"flex", padding:"5px"}}>
+              <Image source={ColliersLogo} style={{height:"38px", width:"59px", position:"absolute", left:"91%", top:"-35px", objectFit:"contain", borderRadius:"2px"}} />
             </View>
           </View>
-          <View style={{height:"2.75in", width:"3in", backgroundColor:"white", border:"1px solid #aeafb6", position:"absolute", Zindex:"10", bottom:".1in", left:".1in"}}>
+          <View style={{height:"2.75in", width:"3in", backgroundColor:"white", border:"1px solid #aeafb6", position:"absolute", Zindex:"10", bottom:".15in", left:".1in"}}>
             <Text style={{fontSize:"13px", textAlign:"center", marginBottom:"-10px", marginTop:"8px"}}>Commute Time Range</Text>
             <Image source={chartImages[`${feature.objectid}`]} style={{width:"100%", height:"80%", objectFit:"contain"}}></Image>
             <View style={{display:"flex", flexDirection:"column", marginTop:"-9px"}}>
@@ -117,37 +154,37 @@ export default function PDFContent({
                   return (
                     <>
                       <View style={{ display:"flex", flexDirection:"row", marginLeft:"5px" }}>
-                        <View style={{height:"7px", width:"7px", backgroundColor:"#2AB6A9", borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+                        <View style={{height:"7px", width:"7px", backgroundColor: commuteTimeSymbol[0].color, borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
                         <Text style={{fontSize:"7px"}}>30 Mins or Less</Text>
                         <Text style={{fontSize:"7px", marginLeft:'auto', marginRight:"auto", color:"#696969"}}>{`(${found.CommuteTime_Under30} employees)`}</Text>
                       </View>
                       <View style={{ display:"flex", flexDirection:"row", marginLeft:"5px" }}>
-                        <View style={{height:"7px", width:"7px", backgroundColor:"#1C54F4", borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+                        <View style={{height:"7px", width:"7px", backgroundColor: commuteTimeSymbol[1].color, borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
                         <Text style={{fontSize:"7px"}}>31 to 45 mins</Text>
                         <Text style={{fontSize:"7px", marginLeft:'auto', marginRight:"auto", color:"#696969"}}>{`(${found.CommuteTime_31_45} employees)`}</Text>
                       </View>
                       <View style={{ display:"flex", flexDirection:"row", marginLeft:"5px" }}>
-                        <View style={{height:"7px", width:"7px", backgroundColor:"#4D93FF", borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+                        <View style={{height:"7px", width:"7px", backgroundColor: commuteTimeSymbol[2].color, borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
                         <Text style={{fontSize:"7px"}}>46 to 60 mins</Text>
                         <Text style={{fontSize:"7px", marginLeft:'auto', marginRight:"auto", color:"#696969"}}>{`(${found.CommuteTime_46_60} employees)`}</Text>
                       </View>
                       <View style={{ display:"flex", flexDirection:"row", marginLeft:"5px" }}>
-                        <View style={{height:"7px", width:"7px", backgroundColor:"#9C45AE", borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+                        <View style={{height:"7px", width:"7px", backgroundColor: commuteTimeSymbol[3].color, borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
                         <Text style={{fontSize:"7px"}}>61 to 90 mins</Text>
                         <Text style={{fontSize:"7px", marginLeft:'auto', marginRight:"auto", color:"#696969"}}>{`(${found.CommuteTime_61_90} employees)`}</Text>
                       </View>
                       <View style={{ display:"flex", flexDirection:"row", marginLeft:"5px" }}>
-                        <View style={{height:"7px", width:"7px", backgroundColor:"#FA6609", borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+                        <View style={{height:"7px", width:"7px", backgroundColor: commuteTimeSymbol[4].color, borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
                         <Text style={{fontSize:"7px"}}>91 to 120 mins</Text>
                         <Text style={{fontSize:"7px", marginLeft:'auto', marginRight:"auto", color:"#696969"}}>{`(${found.CommuteTime_91_120} employees)`}</Text>
                       </View>
                       <View style={{ display:"flex", flexDirection:"row", marginLeft:"5px"}}>
-                        <View style={{height:"7px", width:"7px", backgroundColor:"#ED1B34", borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+                        <View style={{height:"7px", width:"7px", backgroundColor: commuteTimeSymbol[5].color, borderRadius:"20px", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
                         <Text style={{fontSize:"7px"}}>121 to 3 hours</Text>
                         <Text style={{fontSize:"7px", marginLeft:'auto', marginRight:"auto", color:"#696969"}}>{`(${found.CommuteTime_121_3} employees)`}</Text>
                       </View>
                       <View style={{ display:"flex", flexDirection:"row", marginLeft:"5px" }}>
-                        <View style={{height:"7px", width:"7px", backgroundColor:"#ED1B34", transform:"rotate(45deg)", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
+                        <View style={{height:"7px", width:"7px", backgroundColor: commuteTimeSymbol[5].color, transform:"rotate(45deg)", marginRight:"5px", border:"1px solid white", alignSelf:"center"}}></View>
                         <Text style={{fontSize:"6px"}}>Exclude (3 hrs+ or no public Commute Info)</Text>
                       </View>
                     </>
@@ -201,15 +238,94 @@ export default function PDFContent({
           </View>
         </Page>
       ))}
+      <Page size="A4" orientation='landscape' style={styles.page}>
+        <View style={{display:"flex", flexDirection:"column"}}>
+          <View style={{top:".5in", left:"5%", color:"#000759", width:"90%", height:".65in", borderBottom:"5px solid #000759", fontWeight:"light"}}>
+            <Text style={{fontSize:"30"}}>Drive Time Comparison</Text>
+          </View>
+          <View style={{display:"flex", flexDirection:"column", height:"6.75in", width:"100%", top:".6in"}}>
+            <View style={{height:"100%", width:"100%", display:"flex", flexDirection:"row",}}>
+              <View style={{ height:"100%", width:"100%", display:"flex", marginTop:"15px", marginLeft:"5%", marginRight:"5%"}}>
+                <View style={{fontWeight:"bold", color:"#353E59", fontSize:"12", alignSelf:"center", marginBottom:"25px"}}><Text>Number of Employees by Drive Time</Text></View>
+                <Table  weightings={[.09,.09,.09,.09,.09,.09,.09,.09,.09,.09,.09,]} style={{width:"100%", border:"1px solid #000759", justifySelf:"center", alignSelf:"center", marginBottom:"auto"}}>
+                  <TH>
+                    <TD style={{backgroundColor:"#000759", color:"white", padding:"5px", textAlign:"center", justifyContent:"center", fontSize:"10px"}}>Drive Time (Mins)</TD>
+                    {Object.values(commuteGraphics)
+                      .slice(0,10)
+                      .map((feature, index) => (
+                        <TD style={{backgroundColor:"#000759", color:"white", padding:"5px", textAlign:"center", justifyContent:"center", fontSize:"10px"}}>{feature[buildingField]}</TD>
+                      ))
+                    }
+                  </TH>
+                  <TR>
+                    <TD style={styles.tableBody}>{"<30 mins"}</TD>
+                    {Object.values(commuteGraphics)
+                      .slice(0,10)
+                      .map((feature, index) => (
+                        <TD style={styles.tableBody}>{feature.CommuteTime_Under30}</TD>
+                      ))
+                    }
+                  </TR>
+                  <TR>
+                    <TD style={styles.tableBody}>{"31-60 mins"}</TD>
+                    {Object.values(commuteGraphics)
+                      .slice(0,10)
+                      .map((feature, index) => (
+                        <TD style={styles.tableBody}>{feature.CommuteTime_31_45}</TD>
+                      ))
+                    }
+                  </TR>
+                  <TR>
+                    <TD style={styles.tableBody}>{"61-90 mins"}</TD>
+                    {Object.values(commuteGraphics)
+                      .slice(0,10)
+                      .map((feature, index) => (
+                        <TD style={styles.tableBody}>{feature.CommuteTime_61_90}</TD>
+                      ))
+                    }
+                  </TR>
+                  <TR>
+                    <TD style={styles.tableBody}>{"91-120 mins"}</TD>
+                    {Object.values(commuteGraphics)
+                      .slice(0,10)
+                      .map((feature, index) => (
+                        <TD style={styles.tableBody}>{feature.CommuteTime_91_120}</TD>
+                      ))
+                    }
+                  </TR>
+                  <TR>
+                    <TD style={styles.tableBody}>{"121-3 hours"}</TD>
+                    {Object.values(commuteGraphics)
+                      .slice(0,10)
+                      .map((feature, index) => (
+                        <TD style={styles.tableBody}>{feature.CommuteTime_121_3}</TD>
+                      ))
+                    }
+                  </TR>
+                </Table>
+              </View>
+            </View>
+            <View style={{height:"100%", width:"100%", display:"flex", flexDirection:"row"}}>
+              <View style={{height:"100%", width:"100%"}}>
+                <Text style={{fontSize:"13px", textAlign:"center", marginBottom:"-10px", marginTop:"8px", marginBottom:"5px"}}>Average Commute Time & Distance</Text>
+                <Image source={chartImages["Summary"]} style={{width:"100%", height:"90%", objectFit:"contain"}}></Image>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Page>
     </Document>
   );
 
   return(
-    <div style={{height:"100vh", width:"100vw"}}>
-      <PDFViewer style={{width:"100%", height:"100%"}}>
-        <MyDocument />
-      </PDFViewer>
-    </div> 
+      <div style={{textAlign:"center",  backgroundColor:"#CCCDD5", height:"70px", width:"300px", border:"2px solid white", borderRadius:"20px", justifyContent:"center", alignContent:"center", marginInline:"auto", color:"white"}}>
+        <PDFDownloadLink
+          document={<MyDocument />}
+          fileName="commute-report.pdf"
+        >
+          {({ loading }) => (loading ? 'Generating PDF...' : 'Download PDF')}
+        </PDFDownloadLink>
+      </div>
   );
 }
 
@@ -222,5 +338,6 @@ PDFContent.propTypes = {
   nameField : PropTypes.string.isRequired,
   countField : PropTypes.string.isRequired,
   multiEmployeeDict: PropTypes.string.isRequired,
-  chartImages: PropTypes.array.isRequired
+  chartImages: PropTypes.array.isRequired,
+  commuteTimeSymbol: PropTypes.array.isRequired,
 };

@@ -85,7 +85,7 @@ function ReportContent() {
         <div style={{width:"100%", height:"92%", display:"flex", flexDirection:"row"}}>
           <div style={{flex: printingActive ? 1 : "1 1 50%", display:"flex", flexDirection:"column",}}>
             <MapComponent />
-            {(!printingActive && barChartData) && (
+            {(!printingActive && barChartData && configReady) && (
               <div style={{ flex: "1 1 50%", height:"50%", display:"flex", flexDirection:"column"}}>
                 <div style={{textAlign:"center", fontWeight:"bold", fontSize:"20px"}}>Average Travel Time and Distance By Site</div>
                 <BarChartStaging chartData={barChartData} selectedSiteName={selectedSiteName}/>

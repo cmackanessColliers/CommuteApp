@@ -19,7 +19,6 @@ const TRANSPARENCY50 = "80";
 const TRANSPARENCY25 = "40";
 
 const PieChartStaging = ({printChartData}) => {
-
   const colorArray = [DEEPBLUE, DARKBLUE, MEDIUMBLUE, LIGHTBLUE, PALEBLUE, ORANGE, MEDIUMBLUEGREY, DARKBLUEGREY, LIGHTBLUEGREY, PALEBLUEGREY, COLLIERSLIGHTBLUE, TEAL]
   const [chartConfig, setChartConfig] = useState(null)  
   const highlightColor = COLLIERSYELLOW;

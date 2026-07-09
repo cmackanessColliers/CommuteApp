@@ -11,9 +11,10 @@ import {
   CalciteComboboxItem,
   CalciteInputTimePicker,
   CalciteButton,
+  CalciteCheckbox,
 } from "@esri/calcite-components-react";
 
-import { useState, useEffect, useRef, useCallback, } from "react";
+import { useState, useEffect, useRef, useCallback, use, } from "react";
 import "@arcgis/map-components/components/arcgis-search";
 import useAppStateStore from "../../stores/AppStateStore";
 import useUIStore from "../../stores/UIStore";
@@ -28,6 +29,8 @@ import ConfigureTradeArea from "./CSVHandling/ConfigureTradeArea";
 import { EmpCommuteRenderer, EmpCommuteVisualVariables } from "../../map-symbols/MapSymbols";
 import { pieChartFormatting, barChartFormatting } from "../../helpers/utils";
 import { BaselineSymbolRenderer } from "../../helpers/BaselineSymbology";
+import SetCustomSymbology from "./CustomSymbology";
+import createEMPCommuteRenderer from "./CustomSymbolGenerator";
 
 function ConfigBlock() {
   const map = useAppStateStore((state) => state.map)
@@ -51,8 +54,12 @@ function ConfigBlock() {
   const setConfigReady = useAppStateStore((state) => state.setConfigReady);
   const setCommuteGraphics = useAppStateStore((state) => state.setCommuteGraphics)
   const setEmpCommuteLayer = useAppStateStore((state) => state.setEmpCommuteLayer)
+  const empCommuteLayer = useAppStateStore((state) => state.empCommuteLayer)
   const buildingField = useAppStateStore((state) => state.buildingField);
   const employeeCountField = useAppStateStore((state) => state.employeeCountField);
+  const commuteTimeSymbol = useAppStateStore((state) => state.commuteTimeSymbol);
+  const useCustomCommuteSymbol = useAppStateStore((state) => state.useCustomCommuteSymbol);
+  const setUseCustomCommuteSymbol = useAppStateStore((state) => state.setUseCustomCommuteSymbol);
   const formattedTime = new Date().toTimeString().slice(0, 5)
   const [time, setTime] = useState(formattedTime)
   const [pointActive, setPointActive] = useState(false);
@@ -61,6 +68,7 @@ function ConfigBlock() {
   const [travelDuration, setTravelDuration] = useState(20)
   const [areaType, setAreaType] = useState("isochrone")
   const [isLoading, setIsLoading] = useState(false)
+  const [useCustomSymbology, setUseCustomSymbology] = useState(!useCustomCommuteSymbol)
 
   useEffect(
     function () {
@@ -71,6 +79,23 @@ function ConfigBlock() {
     [keyFeature]
   );
   
+  useEffect(
+    function () {
+     if (empCommuteLayer !== null && empCommuteLayer !== undefined) {
+      createEMPCommuteRenderer(commuteTimeSymbol).then((renderer) => {
+        // console.log("Setting EMP Commute Layer Renderer", renderer)
+        empCommuteLayer.renderer = renderer
+        if (employeeCountField) {
+          EmpGraphicsLayer.renderer.visualVariables = EmpCommuteVisualVariables
+        }
+        setEmpCommuteLayer(empCommuteLayer)
+      })
+     }
+    },
+    [empCommuteLayer, commuteTimeSymbol]
+  );
+  
+
   async function setSymbologyGlobal() {
     if (baselineLayer && keyFeature?.length) {
       const oidField = "objectid"
@@ -159,7 +184,7 @@ function ConfigBlock() {
         ).then(([Facilitygraphics, EmpGraphics]) => {
           console.log("CommuteGraphics", Facilitygraphics)
           console.log("EmpCommuteGraphics", EmpGraphics)
-          pieChartFormatting(Facilitygraphics).then((data) => setPieChartData(data))
+          pieChartFormatting(Facilitygraphics, commuteTimeSymbol).then((data) => setPieChartData(data))
           barChartFormatting(Facilitygraphics, buildingField).then((data) => {{setBarChartData(data)}})
           buildEmpGraphicsLayer(EmpGraphics)
           setCommuteGraphics(Facilitygraphics)
@@ -205,11 +230,14 @@ function ConfigBlock() {
       geometryType: "point",
       spatialReference: layer.spatialReference,
     });
-    EmpGraphicsLayer.renderer = EmpCommuteRenderer
-    if (employeeCountField) {
-      EmpGraphicsLayer.renderer.visualVariables = EmpCommuteVisualVariables
-    }
-    setEmpCommuteLayer(EmpGraphicsLayer)
+    createEMPCommuteRenderer(commuteTimeSymbol).then((renderer) => {
+      // console.log("Setting EMP Commute Layer Renderer", renderer)
+      EmpGraphicsLayer.renderer = renderer
+      if (employeeCountField) {
+        EmpGraphicsLayer.renderer.visualVariables = EmpCommuteVisualVariables
+      }
+      setEmpCommuteLayer(EmpGraphicsLayer)
+    })
     // console.log("EmpGraphicsLayer", EmpGraphicsLayer.source)
     // console.log("EmpGraphicsLayer Attributes", EmpGraphicsLayer.source.items[0].attributes)
   }
@@ -249,6 +277,19 @@ function ConfigBlock() {
           >
             <AddEmployees/> 
           </CalciteBlock>
+          {!DestinationOpen && baselineLayer && buildingField && (
+            <>
+              <div slot="content" style={{display:"flex", flexDirection:"row", justifyContent:"space-between", alignItems:"center", marginTop:"10px"}}>
+                <CalciteLabel layout="inline" style={{marginInline:"auto"}} id="LaborTypeCheckbox">
+                  Adjust Commute Time Symbology
+                  <CalciteCheckbox style={{ boxShadow: "var(--optimal-shadow)"}} checked={useCustomCommuteSymbol} onCalciteCheckboxChange={() => {setUseCustomCommuteSymbol(!useCustomCommuteSymbol)}}></CalciteCheckbox>
+                </CalciteLabel>
+              </div>
+              {useCustomCommuteSymbol && (
+                  <SetCustomSymbology />
+              )}
+            </>
+          )}
         </CalciteListItem>
       </CalciteList>
       <div slot="footer" style={{marginTop:"5px", marginBottom:"5px", marginInline:"auto"}}>
