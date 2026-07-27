@@ -20,7 +20,7 @@ import useAppStateStore from "../../stores/AppStateStore";
 import useUIStore from "../../stores/UIStore";
 import Graphic from "@arcgis/core/Graphic";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
-import { fieldList, popupTemplate, compRenderer, baseRenderer } from "../../helpers/layerHandling";
+import CSVTemplateDownloader from "./CSVHandling/CsvTemplateDownloader";
 import { getTravelTimeAreas, getRoutes } from "../../helpers/travel_time_helpers";
 import AddEmployees from "./CSVHandling/AddEmployees";
 import AddSites from "./CSVHandling/AddSites";
@@ -246,6 +246,11 @@ function ConfigBlock() {
   return (
     <>
       <CalciteList style={{width:"100%", height:"100%",display:"flex", flexDirection:"column", overflowY:"auto", padding:"10px", boxSizing:"border-box"}}>
+        <CalciteListItem>
+          <div slot="content">
+            <CSVTemplateDownloader />
+          </div>
+        </CalciteListItem>
         {DestinationOpen && (
           <CalciteListItem style={{width:"100%", justifyContent:"center", outline:"1px solid #CCCDD5", marginBottom:"5px"}}>
           <CalciteBlock
@@ -281,14 +286,14 @@ function ConfigBlock() {
             </div>
             <CalciteBlock
               slot="content"
-              heading="Add Origin Sites"
+              heading="Add Employee Locations"
               collapsible
               expanded={!DestinationOpen}
               icon-start="3d-building"
             >
               <AddEmployees/> 
             </CalciteBlock>
-            {!DestinationOpen && baselineLayer && buildingField && (
+            {!DestinationOpen && (
               <>
                 <div slot="content" style={{display:"flex", flexDirection:"row", justifyContent:"space-between", alignItems:"center", marginTop:"10px"}}>
                   <CalciteLabel layout="inline" style={{marginInline:"auto"}} id="LaborTypeCheckbox">

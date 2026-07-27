@@ -10,12 +10,6 @@ const CSVTemplateDownloader = () => {
     { id: "Latitude", displayName: "Latitude" },
     { id: "Longitude", displayName: "Longitude" },
     { id: "Zip", displayName: "Zip" },
-    { id: "site_image", displayName: "site_image" },
-    { id: "AnnualLeaseRate", displayName: "AnnualLeaseRate" },
-    { id: "AnnualOPEX", displayName: "AnnualOPEX" },
-    { id: "AnnualDrayage", displayName: "AnnualDrayage" },
-    { id: "PropertyTax", displayName: "PropertyTax" },
-    { id: "CorporateIncomeTax", displayName: "CorporateIncomeTax" },
   ];
 
   const propertyDatas = [
@@ -27,18 +21,12 @@ const CSVTemplateDownloader = () => {
       Latitude: 40.25593785,
       Longitude: -74.40905283,
       Zip: "12345",
-      site_image:
-        "https://phillyindustrialspace.com/wp-content/uploads/2025/01/Blogs-1.png",
-      AnnualLeaseRate: "OPTIONAL",
-      AnnualOPEX: "OPTIONAL",
-      AnnualDrayage: "OPTIONAL",
-      PropertyTax: "OPTIONAL",
-      CorporateIncomeTax: "OPTIONAL",
     },
   ];
 
   const EmployeeFields = [
     { id: "Office", displayName: "Office" },
+    { id: "address", displayName: "address" },
     { id: "City", displayName: "City" },
     { id: "State", displayName: "State" },
     { id: "Zip", displayName: "Zip" },
@@ -48,6 +36,7 @@ const CSVTemplateDownloader = () => {
   const employeeDatas = [
     {
       Office: "Example Office Name",
+      address: "123 Example Address Lane",
       City: "Cityville",
       State: "Statesylvania",
       Zip: "12345",
@@ -68,7 +57,6 @@ const CSVTemplateDownloader = () => {
       heading="Download CSV Templates"
       scale="s"
       collapsible
-      description="For Property and Employee data"
       icon-start="download"
     >
       <div

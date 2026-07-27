@@ -1418,7 +1418,7 @@ const tradeAreaSymbol = new SimpleRenderer({
     type: "simple-fill",
     color: [28, 84, 244, 0.1],
     outline: {
-      color: [255, 255, 255, 0.25],
+      color: [28, 84, 244, 0.75],
       width: "1px",
     },
   },

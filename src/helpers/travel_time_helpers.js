@@ -87,18 +87,22 @@ async function generateGraphics(
   );
   switch (areaType) {
     case "isochrone": {
-      const arrival_searches = features.map((feature) => {
-        return {
-          id: `${feature.attributes[oidField]}`,
-          travel_time: travelDuration,
-          coords: {
-            lat: feature.geometry.latitude,
-            lng: feature.geometry.longitude,
-          },
-          transportation: { type: travelMode },
-          arrival_time: "2025-11-17T10:00:00Z",
-          // no_holes: true,
-        };
+      const arrival_searches = features.flatMap((feature) => {
+        const searchBatch = travelDuration.map((time) => {
+          const search = {
+            id: `${feature.attributes[oidField]}_${time}`,
+            travel_time: time,
+            coords: {
+              lat: feature.geometry.latitude,
+              lng: feature.geometry.longitude,
+            },
+            transportation: { type: travelMode },
+            arrival_time: "2025-11-17T10:00:00Z",
+            // no_holes: true,
+          }
+          return search;
+        })
+        return searchBatch;
       });
 
       // // Batch the arrival searches to avoid exceeding API limits
@@ -125,14 +129,22 @@ async function generateGraphics(
 
       if (arrival_searches.length > 10) {
         const batchedArrivalSearches = () => {
-          return arrival_searches.map((search) => ({
-            arrival_searches: [search],
-          }));
-        };
+        const batches = [];
+
+        for (let i = 0; i < arrival_searches.length; i += 10) {
+          batches.push({
+            arrival_searches: arrival_searches.slice(i, i + 10),
+          });
+        }
+
+        return batches;
+      };
+        console.log("batchedArrivalSearches", batchedArrivalSearches())
         const batchResponses = await travelTimeClient.timeMapBatch(
           batchedArrivalSearches(),
           "application/geo+json",
         );
+        console.log("batchResponses", batchResponses);
         // TODO: Handle failed batches more gracefully
         const successfulBatches = batchResponses.filter(
           (batch) => batch.type === "success",
@@ -154,7 +166,7 @@ async function generateGraphics(
       console.timeEnd("Isochrone Batch Request Time");
 
       console.log("Isochrone raw data", data);
-
+      console.log("features before processIsochrone", features[0].attributes)
       // Use pure processor to prepare serializable geometry + attrs
       const processed = processIsochroneResults(
         data,
@@ -162,6 +174,7 @@ async function generateGraphics(
         oidField,
         travelDuration,
       );
+      console.log("features after processIsochrone", features[0].attributes)
       const graphicFeatures = processed.map(
         (item) =>
           new Graphic({
@@ -176,19 +189,27 @@ async function generateGraphics(
       return graphicFeatures;
     }
     case "radial": {
-      const graphicFeatures = features.map((feature) => {
-        return new Graphic({
-          geometry: new Circle({
-            center: [feature.geometry.longitude, feature.geometry.latitude],
-            geodesic: true,
-            numberOfPoints: 100,
-            radius: radius,
-            radiusUnit: "miles",
-          }),
-          attributes: feature.attributes,
+      let oidCounter = 1;
+
+      const graphicFeatures = features.flatMap((feature) => {
+        return radius.map((rad) => {
+          return new Graphic({
+            geometry: new Circle({
+              center: [feature.geometry.longitude, feature.geometry.latitude],
+              geodesic: true,
+              numberOfPoints: 100,
+              radius: rad,
+              radiusUnit: "miles",
+            }),
+            attributes: {
+              OBJECTID: oidCounter++,
+              radius: rad,
+              sourceFeature: feature.attributes[oidField],
+            },
+          });
         });
       });
-      return await graphicFeatures;
+      return graphicFeatures
     }
     case "h3": {
       const arrival_searches = features.map((feature) => {
@@ -383,7 +404,33 @@ async function getTravelTimeAreas(
     "resultLayer", resultLayer
 )
 
-  const inFields = features?.[0].layer.fields;
+const sourceLayer = features?.[0]?.layer;
+const sourceOidField = sourceLayer?.objectIdField;
+
+  const sourceFields = sourceLayer?.fields ?? [];
+
+  const inFields = [
+    {
+      name: "OBJECTID",
+      alias: "OBJECTID",
+      type: "oid",
+    },
+    {
+      name: "sourceFeature",
+      alias: "Source Feature",
+      type: "double",
+    },
+    {
+      name: "radius",
+      alias: "Radius",
+      type: "double",
+    },
+    {
+      name: "travelTime",
+      alias: "Travel Time",
+      type: "double",
+    },
+  ];
   // const oidField = inFields.find((field) => field.type === "oid").name;
   const oidField = features?.[0]?.layer?.objectIdField;
   const graphicFeatures = await generateGraphics(
@@ -401,7 +448,7 @@ async function getTravelTimeAreas(
   const tradeAreasLayer = await new FeatureLayer({
     title: `Trade Areas (${areaType})`,
     source: await graphicFeatures.flat(),
-    objectIdField: oidField,
+    objectIdField: "OBJECTID",
     popupEnabled: true,
     popupTemplate: {
       title: "{name}",

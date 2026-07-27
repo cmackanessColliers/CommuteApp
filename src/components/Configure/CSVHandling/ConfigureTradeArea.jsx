@@ -26,13 +26,17 @@ function ConfigureTradeArea() {
   const tradeAreaLayer = useAppStateStore((state) => state.tradeAreaLayer)
   const useTradeArea = useAppStateStore((state) => state.useTradeArea)
   const setUseTradeArea = useAppStateStore((state) => state.setUseTradeArea)
+  const travelDurations = useAppStateStore((state) => state.travelDurations)
+  const setTravelDurations = useAppStateStore((state) => state.setTravelDurations)
+  const radii = useAppStateStore((state) => state.radii)
+  const setRadii = useAppStateStore((state) => state.setRadii)
   const map = useAppStateStore((state) => state.map)
   const setTradeAreaLayer = useAppStateStore((state) => state.setTradeAreaLayer)
   const formattedTime = new Date().toTimeString().slice(0, 5)
   const [time, setTime] = useState(formattedTime)
   const [configOpen, setConfigOpen] = useState(true)
-  const [radius, setRadius] = useState(null)
-  const [travelDuration, setTravelDuration] = useState(20)
+  // const [radii, setRadii] = useState(radiusLengths !== null ? radiusLengths : [1]);
+  // const [travelDurations, setTravelDurations] = useState(travelTimes !== null ? travelTimes : [1200]);
   const [areaType, setAreaType] = useState("isochrone")
   const [isLoading, setIsLoading] = useState(false)
   
@@ -47,8 +51,8 @@ function ConfigureTradeArea() {
         map?.map?.remove(resultsLayer)
       };
       if (
-        (travelDuration < 1 && areaType === "isochrone") ||
-        (radius < 1 && areaType === "radial")
+        (travelDurations < 1 && areaType === "isochrone") ||
+        (radii < 1 && areaType === "radial")
       ) {
         setIsLoading(false);
         return;
@@ -58,12 +62,12 @@ function ConfigureTradeArea() {
         areaType,
         baselineFeatures,
         "driving",
-        travelDuration*60,
-        radius,
+        travelDurations,
+        radii,
         null,
         resultsLayer,
       ).then((tradeAreasLayer) => {
-        console.log("tradeAreasLayer", tradeAreasLayer)
+        console.log("tradeAreasLayer", tradeAreasLayer.source.items)
         map?.map?.layers?.add(tradeAreasLayer)
         setTradeAreaLayer(tradeAreasLayer)
         extentGetAndGo(tradeAreasLayer)
@@ -85,6 +89,37 @@ function ConfigureTradeArea() {
     }
   }
 
+  const updateTravelDuration = (index, value) => {
+    if (Number(value)) {
+      const updated = [...travelDurations];
+      updated[index] = Number(value*60);
+      setTravelDurations(updated);
+    }
+  };
+
+  const addTravelDuration = () => {
+    setTravelDurations([...travelDurations, null]);
+  };
+
+  const removeTravelDuration = (index) => {
+  const updated = travelDurations.filter((_, i) => i !== index);
+  setTravelDurations(updated);
+};
+
+  const updateRadius = (index, value) => {
+    const updated = [...radii];
+    updated[index] = Number(value);
+    setRadii(updated);
+  };
+
+  const addRadius = () => {
+    setRadii([...radii, null]);
+  };
+  const removeRadius = (index) => {
+    const updated = radii.filter((_, i) => i !== index);
+    setRadii(updated);
+  };
+
   
   async function extentGetAndGo(layer) {
     await layer.when()
@@ -105,7 +140,7 @@ function ConfigureTradeArea() {
           overlayPositioning="fixed"
           placement="right-start"
         >
-          <span>Optional - Generate a drive time area around a baseline site</span>
+          <span>Optional - Show Drive Times</span>
         </CalciteTooltip>
         <CalciteListItem id="TradeAreaListItem" scale="s">
           <div slot="content" style={{ display:"flex", flexDirection:"column", paddingTop:"15px", paddingBottom:"5px"}}>
@@ -160,31 +195,109 @@ function ConfigureTradeArea() {
                     </CalciteListItem>
                       {areaType === "radial" && (
                         <CalciteListItem>
-                          <CalciteLabel slot="content" layout="block" style={{marginTop:"3px", marginBottom:"3px"}}> Set Radius
-                            <CalciteInputNumber
+                          
+                          <CalciteLabel
+                            slot="content"
+                            scale="s"
+                            layout="block"
+                            style={{ marginTop: "3px", marginBottom: "3px" }}
+                          >
+                            Set Radius
+                            {radii.map((radius, index) => (
+                              <div
+                                key={index}
+                                style={{
+                                  display: "flex",
+                                  gap: "8px",
+                                  marginBottom: "6px",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <CalciteInputNumber
+                                  scale="s"
+                                  style={{width:"90%"}}
+                                  value={String(radius)}
+                                  onCalciteInputNumberChange={(e) =>
+                                    updateRadius(index, e.target.value)
+                                  }
+                                />
+
+                                <CalciteButton
+                                  appearance="outline"
+                                  scale="s"
+                                  color="red"
+                                  icon-start="trash"
+                                  onClick={() => removeRadius(index)}
+                                  disabled={radii.length === 1}
+                                >
+                                </CalciteButton>
+                              </div>
+                            ))}
+                            <CalciteButton
+                              appearance="outline"
                               scale="s"
-                              onCalciteInputNumberChange={(e) => {setRadius(e.target.value)}}
-                              value={radius}
-                            ></CalciteInputNumber>
+                              onClick={addRadius}
+                            >
+                              Add Radius
+                            </CalciteButton>
                           </CalciteLabel>
                         </CalciteListItem>
                       )}
                       {areaType === "isochrone" && (
                         <CalciteListItem>
-                          <CalciteLabel slot="content" scale="s" layout="block" style={{marginTop:"3px", marginBottom:"3px"}}> Set Travel Time
-                            <CalciteInputNumber
+                          <CalciteLabel
+                            slot="content"
+                            scale="s"
+                            layout="block"
+                            style={{ marginTop: "3px", marginBottom: "3px" }}
+                          >
+                            Set Travel Times
+                            {travelDurations.map((duration, index) => (
+                              <div
+                                key={index}
+                                style={{
+                                  display: "flex",
+                                  gap: "8px",
+                                  marginBottom: "6px",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <CalciteInputNumber
+                                  scale="s"
+                                  style={{width:"90%"}}
+                                  value={String(duration / 60)}
+                                  onCalciteInputNumberChange={(e) =>
+                                    updateTravelDuration(index, e.target.value)
+                                  }
+                                />
+
+                                <CalciteButton
+                                  appearance="outline"
+                                  scale="s"
+                                  color="red"
+                                  icon-start="trash"
+                                  onClick={() => removeTravelDuration(index)}
+                                  disabled={travelDurations.length === 1}
+                                >
+                                </CalciteButton>
+                              </div>
+                            ))}
+                            <CalciteButton
+                              appearance="outline"
                               scale="s"
-                              onCalciteInputNumberChange={(e) => {setTravelDuration(e.target.value)}}
-                              value={String(travelDuration)}
-                            ></CalciteInputNumber>
+                              onClick={addTravelDuration}
+                            >
+                              Add Travel Time
+                            </CalciteButton>
                           </CalciteLabel>
                         </CalciteListItem>
                       )}
                       <CalciteListItem>
                         <CalciteButton slot="content" width="full"
+                          disabled={isLoading}
                           onClick={()=>{
                             handleCreateTradeAreas()
-                            setConfigOpen(false)
+                            // setConfigOpen(false)
                           }}
                         >Submit</CalciteButton>
                       </CalciteListItem>

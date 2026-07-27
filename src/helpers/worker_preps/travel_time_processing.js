@@ -10,16 +10,25 @@ export function processIsochroneResults(
   oidField,
   travelDuration
 ) {
+
+  console.log(
+    "data",data,
+    "features",features,
+  )
   // data.features is GeoJSON features
+  let oidCounter = 1;
   return data.features.map((feature) => {
-    const searchId = Number(feature.properties.search_id);
+    const searchId = Number(feature.properties.search_id.split("_")[0]);
     const sourceFeature = features.find(
       (f) => f.attributes[oidField] === searchId
     );
     const rings = feature.geometry.coordinates.reverse().flat();
+    // const { objectid, OBJECTID, ...sourceAttributes } =  {...sourceFeature.attributes};
     const attributes = {
-      ...sourceFeature.attributes,
-      traveltime: travelDuration / 60,
+      // ...sourceAttributes,
+      OBJECTID: oidCounter++,
+      sourceFeature: sourceFeature.attributes[oidField],
+      traveltime: feature.properties.search_id.split("_")[1] / 60,
     };
     return { rings, attributes };
   });

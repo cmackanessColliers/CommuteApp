@@ -59,15 +59,18 @@ function CSVContent({ role }) {
     Employee: { fileName: employeeFileName },
   };
 
-  useEffect(
-    function () {
-      if (layer === null || layer === undefined) {
-        removeCSVLayer("Employee")
-        removeCSVLayer("Site")
-      }
-    },
-    [layer]
-  );
+  useEffect(() => {
+    if (!layer && role === "Employee") {
+      removeCSVLayer("Employee");
+    }
+  }, [layer]);
+
+  useEffect(() => {
+    if (!baselineLayer && role === "Site") {
+      removeCSVLayer("Site");
+    }
+  }, [baselineLayer]);
+
 
   async function addCSVLayer(file, map, role, layer, loadingHandler) {
     const config = ROLE_CONFIG[role];

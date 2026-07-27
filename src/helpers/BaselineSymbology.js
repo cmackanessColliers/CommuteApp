@@ -9,7 +9,7 @@ export async function BaselineSymbolRenderer(baselineInfo) {
       
   const valueExprList = [baselineExpr,compareExpr]
   const valueExprListString = `When(${valueExprList.join(" , ")}, 'other')`
-  console.log("Value Expression: ", valueExprListString)
+  // console.log("Value Expression: ", valueExprListString)
 
   const siteSymbol = new UniqueValueRenderer({
       // field: symbolField,

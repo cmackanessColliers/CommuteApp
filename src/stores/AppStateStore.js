@@ -115,6 +115,8 @@ const initialState = {
   fieldMappingRole: null, // Which role (Site/Employee/etc) is currently doing field mapping
   fieldMappingResolver: null, // Function to resolve when field mapping is complete
   fieldMappingData: null, // Data passed to the field mapping dialog
+  travelDurations: [1200],
+  radii: [1],
   commuteTimeSymbol: [
     {
       time: "30 mins or less",
@@ -179,6 +181,8 @@ const useAppStateStore = create(
       setBarChartData: (state) => set({barChartData: state}),
       setPrintingActive: (data) => set({printingActive: data}),
       setCustomSymbology: (data) => set({customSymbology: data}),
+      setTravelDurations: (times) => set({travelDurations: times}),
+      setRadii: (dist) => set({radii: dist}),
       setEmpCommuteLayer: (layer) => {
         const loadLayer = async (layer) => {
           await layer?.load();
