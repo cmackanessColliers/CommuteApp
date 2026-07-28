@@ -15,7 +15,7 @@ import { routesSymbols, tradeAreaSymbol } from "../map-symbols/MapSymbols";
 let Graphic, Circle, FeatureLayer, TravelTimeClient;
 
 function generateTradeAreaSymbol(travelTimes) {
-  const colorArray = [["#1c56f41e", "#1c56f423"], ["#25408f1c", "#25408f81"], ["#00075917", "#00075952"]]
+  const colorArray = [["#1c56f41e", "#1c56f498"], ["#25408f1c", "#25408f81"], ["#00075917", "#00075952"]]
   const styleArray = []
   travelTimes.map((time, index) => {
     const style = {
