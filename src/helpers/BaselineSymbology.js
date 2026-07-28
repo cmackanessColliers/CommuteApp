@@ -1,5 +1,6 @@
 import UniqueValueRenderer from "@arcgis/core/renderers/UniqueValueRenderer.js";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
+import { siteSymbol, baselineSymbol } from "../map-symbols/MapSymbols";
 
 export async function BaselineSymbolRenderer(baselineInfo) {
 
@@ -11,7 +12,7 @@ export async function BaselineSymbolRenderer(baselineInfo) {
   const valueExprListString = `When(${valueExprList.join(" , ")}, 'other')`
   // console.log("Value Expression: ", valueExprListString)
 
-  const siteSymbol = new UniqueValueRenderer({
+  const customSiteSymbol = new UniqueValueRenderer({
       // field: symbolField,
       valueExpression: valueExprListString,
       valueExpressionTitle: "Baseline Status",
@@ -67,5 +68,25 @@ export async function BaselineSymbolRenderer(baselineInfo) {
         }
       ]
   });
-  return siteSymbol
+  return customSiteSymbol
 }
+
+export function createBuildingRenderer(keyFeature, buildingField) {
+  const buildingName = keyFeature?.[0]?.attributes?.[buildingField];
+  const renderer = new UniqueValueRenderer({
+    type: "unique-value",
+    field: buildingField,
+    defaultSymbol: siteSymbol?.symbol,
+    uniqueValueInfos: [
+      {
+        value: buildingName,
+        symbol: baselineSymbol,
+        label: "Baseline Site"
+      }
+    ]
+  })
+
+  console.log(renderer)
+  return renderer;
+}
+

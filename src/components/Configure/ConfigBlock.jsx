@@ -28,7 +28,7 @@ import { generateCommuteAnalysis } from "../../helpers/CommuteAnalysis";
 import ConfigureTradeArea from "./CSVHandling/ConfigureTradeArea";
 import { EmpCommuteRenderer, EmpCommuteVisualVariables } from "../../map-symbols/MapSymbols";
 import { pieChartFormatting, barChartFormatting, CommuteChangeChartFormatting } from "../../helpers/utils";
-import { BaselineSymbolRenderer } from "../../helpers/BaselineSymbology";
+import { BaselineSymbolRenderer, createBuildingRenderer } from "../../helpers/BaselineSymbology";
 import SetCustomSymbology from "./CustomSymbology";
 import createEMPCommuteRenderer from "./CustomSymbolGenerator";
 
@@ -108,7 +108,8 @@ function ConfigBlock() {
       if (keyFeature !== null && keyFeature !== undefined) {
         baselineInfo.keyFeature =  keyFeature[0].attributes.objectid
       }
-      const customSymbol = await BaselineSymbolRenderer(baselineInfo)
+      // const customSymbol = await BaselineSymbolRenderer(baselineInfo)
+      const customSymbol = await createBuildingRenderer(keyFeature, buildingField)      
       setCustomSymbology(customSymbol)
     }
   }

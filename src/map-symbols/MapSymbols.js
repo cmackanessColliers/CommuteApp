@@ -288,6 +288,288 @@ const siteSymbol = {
   }),
 };
 
+const baselineSymbol = new CIMSymbol({
+    data: {
+      type: "CIMSymbolReference",
+      symbol: {
+        type: "CIMPointSymbol",
+        symbolLayers: [
+          {
+            type: "CIMVectorMarker",
+            enable: true,
+            anchorPointUnits: "Relative",
+            dominantSizeAxis3D: "Z",
+            size: 12,
+            billboardMode3D: "FaceNearPlane",
+            frame: {
+              xmin: 0,
+              ymin: 0,
+              xmax: 100,
+              ymax: 100,
+            },
+            markerGraphics: [
+              {
+                type: "CIMMarkerGraphic",
+                geometry: {
+                  paths: [
+                    [
+                      [74.1, 46.1],
+                      [74.1, 46.1],
+                      [88.4, 46.3],
+                      [88.4, 9.5],
+                      [65.8, 9.5],
+                    ],
+                  ],
+                },
+                symbol: {
+                  type: "CIMPolygonSymbol",
+                  symbolLayers: [
+                    {
+                      type: "CIMSolidStroke",
+                      enable: true,
+                      capStyle: "Butt",
+                      joinStyle: "Miter",
+                      lineStyle3D: "Strip",
+                      miterLimit: 10,
+                      width: 1,
+                      height3D: 1,
+                      anchor3D: "Center",
+                      color: [255, 255, 255, 255],
+                    },
+                  ],
+                  angleAlignment: "Map",
+                },
+              },
+              {
+                type: "CIMMarkerGraphic",
+                geometry: {
+                  paths: [
+                    [
+                      [36.7, 10],
+                      [36.7, 10],
+                      [14.1, 10],
+                      [14.1, 63.3],
+                      [27.8, 71.3],
+                    ],
+                  ],
+                },
+                symbol: {
+                  type: "CIMPolygonSymbol",
+                  symbolLayers: [
+                    {
+                      type: "CIMSolidStroke",
+                      enable: true,
+                      capStyle: "Butt",
+                      joinStyle: "Miter",
+                      lineStyle3D: "Strip",
+                      miterLimit: 10,
+                      width: 1,
+                      height3D: 1,
+                      anchor3D: "Center",
+                      color: [255, 255, 255, 255],
+                    },
+                  ],
+                  angleAlignment: "Map",
+                },
+              },
+              {
+                type: "CIMMarkerGraphic",
+                geometry: {
+                  rings: [
+                    [
+                      [36.7, 10.1],
+                      [65.8, 10.1],
+                      [65.8, 84.4],
+                      [36.7, 84.4],
+                      [36.7, 10.1],
+                    ],
+                  ],
+                },
+                symbol: {
+                  type: "CIMPolygonSymbol",
+                  symbolLayers: [
+                    {
+                      type: "CIMSolidStroke",
+                      enable: true,
+                      capStyle: "Butt",
+                      joinStyle: "Miter",
+                      lineStyle3D: "Strip",
+                      miterLimit: 10,
+                      width: 1,
+                      height3D: 1,
+                      anchor3D: "Center",
+                      color: [255, 255, 255, 255],
+                    },
+                  ],
+                  angleAlignment: "Map",
+                },
+              },
+              {
+                type: "CIMMarkerGraphic",
+                geometry: {
+                  rings: [
+                    [
+                      [46.4, 10],
+                      [56.1, 10],
+                      [56.1, 19.7],
+                      [46.4, 19.7],
+                      [46.4, 10],
+                    ],
+                  ],
+                },
+                symbol: {
+                  type: "CIMPolygonSymbol",
+                  symbolLayers: [
+                    {
+                      type: "CIMSolidStroke",
+                      enable: true,
+                      capStyle: "Butt",
+                      joinStyle: "Miter",
+                      lineStyle3D: "Strip",
+                      miterLimit: 10,
+                      width: 1,
+                      height3D: 1,
+                      anchor3D: "Center",
+                      color: [255, 255, 255, 255],
+                    },
+                  ],
+                  angleAlignment: "Map",
+                },
+              },
+              {
+                type: "CIMMarkerGraphic",
+                geometry: {
+                  paths: [
+                    [
+                      [76.9, 55.4],
+                      [76.9, 46.1],
+                    ],
+                  ],
+                },
+                symbol: {
+                  type: "CIMPolygonSymbol",
+                  symbolLayers: [
+                    {
+                      type: "CIMSolidStroke",
+                      enable: true,
+                      capStyle: "Butt",
+                      joinStyle: "Miter",
+                      lineStyle3D: "Strip",
+                      miterLimit: 10,
+                      width: 1,
+                      height3D: 1,
+                      anchor3D: "Center",
+                      color: [255, 255, 255, 255],
+                    },
+                  ],
+                  angleAlignment: "Map",
+                },
+              },
+            ],
+            scaleSymbolsProportionally: false,
+            respectFrame: true,
+            clippingPath: {
+              type: "CIMClippingPath",
+              clippingType: "Intersect",
+              path: {
+                rings: [
+                  [
+                    [0, 0],
+                    [100, 0],
+                    [100, 100],
+                    [0, 100],
+                    [0, 0],
+                  ],
+                ],
+              },
+            },
+            offsetX: 0,
+            offsetY: 17,
+          },
+          {
+            type: "CIMVectorMarker",
+            enable: true,
+            anchorPoint: {
+              x: 0,
+              y: -0.5,
+            },
+            anchorPointUnits: "Relative",
+            dominantSizeAxis3D: "Y",
+            size: 25,
+            billboardMode3D: "FaceNearPlane",
+            frame: {
+              xmin: 0,
+              ymin: 0,
+              xmax: 21,
+              ymax: 21,
+            },
+            markerGraphics: [
+              {
+                type: "CIMMarkerGraphic",
+                geometry: {
+                  rings: [
+                    [
+                      [17.17, 14.33],
+                      [16.97, 12.96],
+                      [16.38, 11.37],
+                      [12.16, 3.98],
+                      [11.2, 1.94],
+                      [10.5, 0],
+                      [9.8, 1.96],
+                      [8.84, 4.02],
+                      [4.61, 11.41],
+                      [4.02, 12.98],
+                      [3.83, 14.33],
+                      [3.96, 15.63],
+                      [4.34, 16.88],
+                      [4.95, 18.03],
+                      [5.78, 19.04],
+                      [6.8, 19.88],
+                      [7.95, 20.49],
+                      [9.2, 20.87],
+                      [10.5, 21],
+                      [11.8, 20.87],
+                      [13.05, 20.5],
+                      [14.2, 19.88],
+                      [15.22, 19.05],
+                      [16.05, 18.03],
+                      [16.66, 16.88],
+                      [17.04, 15.63],
+                      [17.17, 14.33],
+                    ],
+                  ],
+                },
+                symbol: {
+                  type: "CIMPolygonSymbol",
+                  symbolLayers: [
+                    {
+                      type: "CIMSolidStroke",
+                      enable: true,
+                      capStyle: "Round",
+                      joinStyle: "Round",
+                      lineStyle3D: "Strip",
+                      miterLimit: 10,
+                      width: 0,
+                      color: [110, 110, 110, 255],
+                    },
+                    {
+                      type: "CIMSolidFill",
+                      enable: true,
+                      color: [28, 84, 244, 255],
+                    },
+                  ],
+                },
+              },
+            ],
+            scaleSymbolsProportionally: false,
+            respectFrame: true,
+          },
+        ],
+        animations: [],
+      },
+    },
+  });
+
 const employeeSymbol ={
   type: 'simple',
   symbol: new CIMSymbol({
@@ -1612,4 +1894,4 @@ const EmpCommuteVisualVariables = [
   ]
 
 
-export { siteSymbol, employeeSymbol, inboundSymbol, outboundSymbol, routesSymbols, tradeAreaSymbol, outputTradeAreaSymbol, featureReductionSettings, EmpCommuteRenderer, EmpCommuteVisualVariables };
+export { siteSymbol, baselineSymbol, employeeSymbol, inboundSymbol, outboundSymbol, routesSymbols, tradeAreaSymbol, outputTradeAreaSymbol, featureReductionSettings, EmpCommuteRenderer, EmpCommuteVisualVariables };

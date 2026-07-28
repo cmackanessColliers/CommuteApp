@@ -7,12 +7,45 @@ import * as bufferOperator from "@arcgis/core/geometry/operators/bufferOperator.
 import * as unionOperator from "@arcgis/core/geometry/operators/unionOperator.js"
 import * as projection from "@arcgis/core/geometry/projection";
 import SpatialReference from "@arcgis/core/geometry/SpatialReference";
-
+import UniqueValueRenderer from "@arcgis/core/renderers/UniqueValueRenderer.js";
 import { rankingFields } from "./routing_fields";
 import { formatter, intFormatter, numFormatter } from "./utils";
 import { routesSymbols, tradeAreaSymbol } from "../map-symbols/MapSymbols";
 
 let Graphic, Circle, FeatureLayer, TravelTimeClient;
+
+function generateTradeAreaSymbol(travelTimes) {
+  const colorArray = [["#1c56f41e", "#1c56f423"], ["#25408f1c", "#25408f81"], ["#00075917", "#00075952"]]
+  const styleArray = []
+  travelTimes.map((time, index) => {
+    const style = {
+      value: time / 60,
+      symbol: {
+      type: "simple-fill",
+      color: colorArray[index][0],
+      outline: {
+        color: colorArray[index][1],
+        width: "1px",
+      },
+    }}
+    styleArray.push(style)
+  })
+  const outputTradeAreaSymbol = new UniqueValueRenderer({
+    type: "unique-value", // autocasts as new SimpleRenderer()
+    field: "travelTime",
+    defaultSymbol: {
+      type: "simple-fill",
+      color: [0, 7, 89, .15],
+      outline: {
+        color: [255, 255, 255, 1],
+        width: "1px",
+      },
+    },
+    uniqueValueInfos: styleArray,
+  });
+  console.log("outputTradeAreaSymbol", outputTradeAreaSymbol)
+  return outputTradeAreaSymbol
+}
 
 async function initializeModules() {
   if (Graphic) return; // Already initialized
@@ -166,7 +199,6 @@ async function generateGraphics(
       console.timeEnd("Isochrone Batch Request Time");
 
       console.log("Isochrone raw data", data);
-      console.log("features before processIsochrone", features[0].attributes)
       // Use pure processor to prepare serializable geometry + attrs
       const processed = processIsochroneResults(
         data,
@@ -174,7 +206,6 @@ async function generateGraphics(
         oidField,
         travelDuration,
       );
-      console.log("features after processIsochrone", features[0].attributes)
       const graphicFeatures = processed.map(
         (item) =>
           new Graphic({
@@ -445,6 +476,12 @@ const sourceOidField = sourceLayer?.objectIdField;
   );
   // Create a feature layer to hold the trade
   console.log("graphicFeatures", graphicFeatures);
+  let symbol
+  if (travelDuration.length > 1) {
+    symbol = generateTradeAreaSymbol(travelDuration)
+  } else {
+    symbol = tradeAreaSymbol
+  }
   const tradeAreasLayer = await new FeatureLayer({
     title: `Trade Areas (${areaType})`,
     source: await graphicFeatures.flat(),
@@ -455,7 +492,7 @@ const sourceOidField = sourceLayer?.objectIdField;
       content: `Trade area for ${oidField}`,
     },
     fields: inFields,
-    renderer: tradeAreaSymbol,
+    renderer: symbol,
     spatialReference: { wkid: 4326 },
   });
   if (resultLayer && resultLayer.title.includes(areaType)) {
