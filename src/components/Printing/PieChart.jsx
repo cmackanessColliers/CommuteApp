@@ -1,18 +1,18 @@
 import PropTypes from "prop-types";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Image } from "@react-pdf/renderer";
-import { Pie } from "react-chartjs-2";
+import { Doughnut } from "react-chartjs-2";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   Chart as ChartJS,
-  PieController, 
+  DoughnutController, 
   ArcElement,  
   Tooltip,
   Legend,
 } from "chart.js";
 
 ChartJS.register(
-  PieController,
+  DoughnutController,
   ArcElement,
   Tooltip,
   Legend,
@@ -28,7 +28,7 @@ function PieChart({ chartData }) {
     responsive: true,
     plugins: {
       datalabels: {
-        color: "#fff",
+        color: "#ffffff00",
         display: (context) => {
           const value = context.dataset.data[context.dataIndex];
           return value !== 0;   // ✅ hide labels when value is 0
@@ -39,7 +39,7 @@ function PieChart({ chartData }) {
         position: "right",
         labels: {
           boxWidth: 10,
-          font: {size:9},
+          font: {size:12},
           filter: (legendItem, data) => {
             return data.datasets[0].data[legendItem.index] !== 0;
           }
@@ -51,7 +51,7 @@ function PieChart({ chartData }) {
     },
   }), []);
 
-  return <Pie data={chartData} options={options} />;
+  return <Doughnut data={chartData} options={options} />;
 }
 
 

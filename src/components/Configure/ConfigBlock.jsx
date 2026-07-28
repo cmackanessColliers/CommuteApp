@@ -27,7 +27,7 @@ import AddSites from "./CSVHandling/AddSites";
 import { generateCommuteAnalysis } from "../../helpers/CommuteAnalysis";
 import ConfigureTradeArea from "./CSVHandling/ConfigureTradeArea";
 import { EmpCommuteRenderer, EmpCommuteVisualVariables } from "../../map-symbols/MapSymbols";
-import { pieChartFormatting, barChartFormatting } from "../../helpers/utils";
+import { pieChartFormatting, barChartFormatting, CommuteChangeChartFormatting } from "../../helpers/utils";
 import { BaselineSymbolRenderer } from "../../helpers/BaselineSymbology";
 import SetCustomSymbology from "./CustomSymbology";
 import createEMPCommuteRenderer from "./CustomSymbolGenerator";
@@ -51,6 +51,7 @@ function ConfigBlock() {
   const setTradeAreaLayer = useAppStateStore((state) => state.setTradeAreaLayer)
   const setPieChartData = useAppStateStore((state) => state.setPieChartData)
   const setBarChartData = useAppStateStore((state) => state.setBarChartData)
+  const setCommuteChangeChartData = useAppStateStore((state) => state.setCommuteChangeChartData)
   const setConfigReady = useAppStateStore((state) => state.setConfigReady);
   const setCommuteGraphics = useAppStateStore((state) => state.setCommuteGraphics)
   const setEmpCommuteLayer = useAppStateStore((state) => state.setEmpCommuteLayer)
@@ -186,6 +187,9 @@ function ConfigBlock() {
           console.log("EmpCommuteGraphics", EmpGraphics)
           pieChartFormatting(Facilitygraphics, commuteTimeSymbol).then((data) => setPieChartData(data))
           barChartFormatting(Facilitygraphics, buildingField).then((data) => {{setBarChartData(data)}})
+          if (keyFeature) {            
+            CommuteChangeChartFormatting(Facilitygraphics, buildingField, keyFeature).then((data) => {{setCommuteChangeChartData(data)}})
+          }
           buildEmpGraphicsLayer(EmpGraphics)
           setCommuteGraphics(Facilitygraphics)
           setIsLoading(false);

@@ -534,18 +534,19 @@ async function preprocessCSV(file) {
 
 async function pieChartFormatting(commuteGraphics, commuteTimeSymbol) {
   const pieChartDict = {}
-  const timeBins = commuteTimeSymbol.map((bin) => bin.time)
-  const barColors = commuteTimeSymbol.map((bin) => bin.color)
   Object.values(commuteGraphics).forEach((feature) => {
+    const yValues = [
+          feature.CommuteTime_Under30, 
+          feature.CommuteTime_31_45, 
+          feature.CommuteTime_46_60, 
+          feature.CommuteTime_61_90,
+          feature.CommuteTime_91_120,
+          feature.CommuteTime_121_3,
+        ]
+    const timeBins = commuteTimeSymbol.map((bin) => `${bin.time}: ${yValues[commuteTimeSymbol.indexOf(bin)]}`);
+    const barColors = commuteTimeSymbol.map((bin) => bin.color)
     pieChartDict[feature.objectid] = {
-      yValues: [
-        feature.CommuteTime_Under30, 
-        feature.CommuteTime_31_45, 
-        feature.CommuteTime_46_60, 
-        feature.CommuteTime_61_90,
-        feature.CommuteTime_91_120,
-        feature.CommuteTime_121_3,
-      ],
+      yValues: yValues,
       xValues: timeBins,
       barColors: barColors
     }
@@ -558,7 +559,7 @@ async function barChartFormatting(commuteGraphics, buildingName) {
   const labels = Object.values(commuteGraphics).map(graphic => graphic[buildingName])
   const barChartDict = {
     AvgTime: {
-      data: Object.values(commuteGraphics).map(graphic => graphic.AverageCommuteTime),
+      data: Object.values(commuteGraphics).map(graphic => intFormatter.format(graphic.AverageCommuteTime)),
       labels: labels,
     },
     AvgDist: {
@@ -568,6 +569,27 @@ async function barChartFormatting(commuteGraphics, buildingName) {
   }
   console.log("barChartDict", barChartDict)
   return barChartDict
+}
+
+
+async function CommuteChangeChartFormatting(commuteGraphics, buildingName, baselineFeature) {
+  const labels = Object.values(commuteGraphics).filter(graphic => (graphic[buildingName] !== baselineFeature?.[0]?.attributes?.[buildingName])).map(graphic => graphic[buildingName])
+  const CommuteChangeChartDict = {
+    CommuteShorterBy5: {
+      data: Object.values(commuteGraphics).filter(graphic => (graphic[buildingName] !== baselineFeature?.[0]?.attributes?.[buildingName])).map(graphic => graphic.CommuteShorterBy5 === 0 ? null : graphic.CommuteShorterBy5),
+      labels: labels,
+    },
+    Commutewithin5: {
+      data: Object.values(commuteGraphics).filter(graphic => (graphic[buildingName] !== baselineFeature?.[0]?.attributes?.[buildingName])).map(graphic => graphic.Commutewithin5 === 0 ? null : graphic.Commutewithin5),
+      labels: labels,
+    },
+    CommuteLongerBy5: {
+      data: Object.values(commuteGraphics).filter(graphic => (graphic[buildingName] !== baselineFeature?.[0]?.attributes?.[buildingName])).map(graphic => graphic.CommutelongerBy5 === 0 ? null : graphic.CommutelongerBy5),
+      labels: labels,
+    },
+  }
+  console.log("CommuteChangeChartDict", CommuteChangeChartDict)
+  return CommuteChangeChartDict
 }
 
 function makeIndexedStyles({
@@ -611,7 +633,7 @@ const generatePieChartData = async (chartConfig, width = 500, height = 500) => {
   canvas.height = height;
 
   const chart = new ChartJS(canvas.getContext('2d'), {
-    type: 'pie',
+    type: 'doughnut',
     data: chartConfig,
     options: {
       responsive: false,
@@ -631,7 +653,7 @@ const generatePieChartData = async (chartConfig, width = 500, height = 500) => {
           },
         },
         datalabels: {
-          color: "#fff",
+          color: "#ffffff00",
           display: (context) => {
             const value = context.dataset.data[context.dataIndex];
             return value !== 0;   // ✅ hide labels when value is 0
@@ -792,5 +814,6 @@ export {
   pieChartFormatting,
   barChartFormatting,
   generatePieChartData,
-  generateBarChartData
+  generateBarChartData,
+  CommuteChangeChartFormatting
 };

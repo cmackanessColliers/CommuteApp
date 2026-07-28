@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Image } from "@react-pdf/renderer";
-import { Pie } from "react-chartjs-2";
+import { Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,  
@@ -27,7 +27,7 @@ function PrintChart({ chartData }) {
     responsive: true,
     plugins: {
       datalabels: {
-        color: "#fff",
+        color: "#ffffff00",
         display: (context) => {
           const value = context.dataset.data[context.dataIndex];
           return value !== 0;   // ✅ hide labels when value is 0
@@ -71,7 +71,7 @@ function PrintChart({ chartData }) {
 
     // Build Chart.js instance
     chartRef.current = new ChartJS(canvas, {
-      type: "pie",
+      type: "doughnut",
       data: chartData
     });
 

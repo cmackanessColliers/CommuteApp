@@ -189,152 +189,47 @@ const MapComponent = () => {
   };
 
 
-  // const handleFeatureSelect = useCallback(async (oid) => {
-  //   if (baselineLayer && empCommuteLayer) {
-  //     const inMapLayer = map?.map?.layers?.find(l => l?.title?.includes(baselineLayer.title));
-  //     const inMapCommuteLayer = map?.map?.layers?.find(l => l?.title?.includes(empCommuteLayer.title));
-  //     const inMapTradeAreaLayer = map?.map?.layers?.find(l => l?.title?.includes("Trade Areas"))
-  //     if (!oid) {
-  //       // empCommuteLayer.queryFeatures().then((results) => console.log("layer features", results.features))
-  //       const layerView = await map?.view.whenLayerView(inMapLayer);
-  //       layerView.title = `${baselineLayer.title} layer view`;
-  //       layerView.filter = new FeatureFilter({where: `1=1`});
-  //       const commuteLayerView = await map?.view.whenLayerView(inMapCommuteLayer);
-  //       commuteLayerView.title = `${empCommuteLayer.title} layer view`;
-  //       commuteLayerView.filter = new FeatureFilter({where: `1=0`});
-  //       if (inMapTradeAreaLayer) {
-  //         const tradeAreaLayerView = await map?.view.whenLayerView(inMapTradeAreaLayer);
-  //         tradeAreaLayerView.title = `${tradeAreaLayer.title} layer view`;
-  //         tradeAreaLayerView.filter = new FeatureFilter({where: `1=0`});
-  //       }
-  //       return;
-  //     }
-      
-  //     const layerView = await map?.view.whenLayerView(inMapLayer);
-  //     layerView.title = `${baselineLayer.title} layer view`;
-  //     layerView.filter = new FeatureFilter({where: `objectid = ${oid}`});
-        
-  //     // empCommuteLayer.queryFeatures().then((results) => console.log("layer features", results.features))
-  //     const commuteLayerView = await map?.view.whenLayerView(inMapCommuteLayer);
-  //     commuteLayerView.title = `${empCommuteLayer.title} layer view`;
-  //     const commuteWhere = `bldsite = '${String(oid)}'`
-  //     commuteLayerView.filter = new FeatureFilter({where: commuteWhere});
-      
-  //     if (inMapTradeAreaLayer) {
-  //       const tradeAreaLayerView = await map?.view.whenLayerView(inMapTradeAreaLayer);
-  //       tradeAreaLayerView.title = `${tradeAreaLayer.title} layer view`;
-  //       const tradeAreaWhere = `sourceFeature = '${String(oid)}'`
-  //       tradeAreaLayerView.filter = new FeatureFilter({where: tradeAreaWhere});
-  //     }
-  //   }
-  // }, [baselineLayer, empCommuteLayer, setSelectedSite]);
-
   const handleFeatureSelect = useCallback(async (oid) => {
-    if (!map?.view || !map?.map || !baselineLayer || !empCommuteLayer) return;
-
-    const view = map.view;
-    const allLayers = map.map.layers?.items || [];
-
-    const findLayerByTitle = (targetLayer) => {
-      if (!targetLayer?.title) return null;
-
-      return allLayers.find((l) => {
-        return (l === targetLayer ||l.id === targetLayer.id ||l.title === targetLayer.title);
-      });
-    };
-
-    const inMapLayer = findLayerByTitle(baselineLayer);
-    const inMapCommuteLayer = findLayerByTitle(empCommuteLayer);
-    const inMapTradeAreaLayer = allLayers.find((l) =>
-      l?.title?.includes("Trade Areas")
-    );
-
-    if (!inMapLayer) {
-      console.warn("Baseline layer was not found in the map.", {
-        baselineLayer,
-        allLayers,
-      });
-      return;
-    }
-
-    await Promise.all(
-      [inMapLayer, inMapCommuteLayer, inMapTradeAreaLayer]
-        .filter(Boolean)
-        .map((l) => l.load?.())
-    );
-
-    const applyLayerViewFilter = async (targetLayer, where, title) => {
-      if (!targetLayer) return null;
-      const layerView = await view.whenLayerView(targetLayer);
-      layerView.title = title;
-      layerView.filter = new FeatureFilter({ where });
-      return layerView;
-    };
-
-    if (!oid) {
-      await applyLayerViewFilter(inMapLayer,"1=1",`${baselineLayer.title} layer view`);
-      await applyLayerViewFilter( inMapCommuteLayer, "1=0", `${empCommuteLayer.title} layer view`);
-      if (inMapTradeAreaLayer) {
-        await applyLayerViewFilter( inMapTradeAreaLayer, "1=0", `${tradeAreaLayer?.title || "Trade Areas"} layer view`);
-      }
-      return;
-    }
-
-    const safeOid = Number(oid);
-
-    if (!Number.isFinite(safeOid)) {
-      console.warn("Invalid oid supplied to handleFeatureSelect:", oid);
-      return;
-    }
-
-    const baselineObjectIdField = inMapLayer.objectIdField || baselineLayer.objectIdField || "OBJECTID";
-
-    const baselineWhere = `${baselineObjectIdField} = ${safeOid}`;
-    const commuteWhere = `bldsite = '${String(safeOid).replaceAll("'", "''")}'`;
-    const tradeAreaWhere = `sourceFeature = '${String(safeOid).replaceAll("'", "''")}'`;
-
-    console.log("baselineWhere", baselineWhere)
-    await applyLayerViewFilter( inMapLayer, baselineWhere, `${baselineLayer.title} layer view`);
-    await applyLayerViewFilter( inMapCommuteLayer, commuteWhere, `${empCommuteLayer.title} layer view`);
-    if (inMapTradeAreaLayer) {
-      await applyLayerViewFilter( inMapTradeAreaLayer, tradeAreaWhere, `${tradeAreaLayer?.title || "Trade Areas"} layer view`);
-    }
-    const queryFilteredFeatures = async (targetLayer, where) => {
-      if (!targetLayer?.createQuery || !targetLayer?.queryFeatures) return [];
-
-      const query = targetLayer.createQuery();
-      query.where = where;
-      query.returnGeometry = true;
-      query.outFields = ["*"];
-
-      const result = await targetLayer.queryFeatures(query);
-      return result.features || [];
-    };
-    const [baselineFeatures, commuteFeatures, tradeAreaFeatures] =
-      await Promise.all([
-        queryFilteredFeatures(inMapLayer, baselineWhere),
-        queryFilteredFeatures(inMapCommuteLayer, commuteWhere),
-        queryFilteredFeatures(inMapTradeAreaLayer, tradeAreaWhere),
-      ]);
-
-    const zoomFeatures = [
-      ...baselineFeatures,
-      ...commuteFeatures,
-      ...tradeAreaFeatures,
-    ].filter((feature) => feature?.geometry);
-
-    if (zoomFeatures.length) {
-      await view.goTo(zoomFeatures, {
-        duration: 200,
-      }).catch((error) => {
-        if (error.name !== "AbortError") {
-          console.error("Error zooming to selected features:", error);
+    if (baselineLayer && empCommuteLayer) {
+      const inMapLayer = map?.map?.layers?.find(l => l?.title?.includes(baselineLayer.title));
+      const inMapCommuteLayer = map?.map?.layers?.find(l => l?.title?.includes(empCommuteLayer.title));
+      const inMapTradeAreaLayer = map?.map?.layers?.find(l => l?.title?.includes("Trade Areas"))
+      if (!oid) {
+        // empCommuteLayer.queryFeatures().then((results) => console.log("layer features", results.features))
+        const layerView = await map?.view.whenLayerView(inMapLayer);
+        layerView.title = `${baselineLayer.title} layer view`;
+        layerView.filter = new FeatureFilter({where: `1=1`});
+        const commuteLayerView = await map?.view.whenLayerView(inMapCommuteLayer);
+        commuteLayerView.title = `${empCommuteLayer.title} layer view`;
+        commuteLayerView.filter = new FeatureFilter({where: `1=0`});
+        if (inMapTradeAreaLayer) {
+          const tradeAreaLayerView = await map?.view.whenLayerView(inMapTradeAreaLayer);
+          tradeAreaLayerView.title = `${tradeAreaLayer.title} layer view`;
+          tradeAreaLayerView.filter = new FeatureFilter({where: `1=0`});
         }
-      });
+        return;
+      }
+      
+      const layerView = await map?.view.whenLayerView(inMapLayer);
+      layerView.title = `${baselineLayer.title} layer view`;
+      layerView.filter = new FeatureFilter({where: `objectid = ${oid}`});
+        
+      // empCommuteLayer.queryFeatures().then((results) => console.log("layer features", results.features))
+      const commuteLayerView = await map?.view.whenLayerView(inMapCommuteLayer);
+      commuteLayerView.title = `${empCommuteLayer.title} layer view`;
+      const commuteWhere = `bldsite = '${String(oid)}'`
+      commuteLayerView.filter = new FeatureFilter({where: commuteWhere});
+      
+      if (inMapTradeAreaLayer) {
+        const tradeAreaLayerView = await map?.view.whenLayerView(inMapTradeAreaLayer);
+        tradeAreaLayerView.title = `${tradeAreaLayer.title} layer view`;
+        const tradeAreaWhere = `sourceFeature = '${String(oid)}'`
+        tradeAreaLayerView.filter = new FeatureFilter({where: tradeAreaWhere});
+      }
     }
-  }, [map, baselineLayer, empCommuteLayer, tradeAreaLayer]);
+  }, [baselineLayer, empCommuteLayer, setSelectedSite]);
 
-  
+
   const handleLayerOrdering = useCallback(() => {
     if (layer !== null) {
       const compLayer = map?.map?.layers.items.find(

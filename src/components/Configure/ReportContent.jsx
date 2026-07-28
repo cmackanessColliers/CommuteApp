@@ -8,8 +8,13 @@ import {
   CalciteComboboxItem,
   CalciteInputTimePicker,
   CalciteButton,
+  CalciteTab,
+  CalciteTabNav,
+  CalciteTabTitle,
+  CalciteTabs
 } from "@esri/calcite-components-react";
 import BarChartStaging from "../Printing/BarChartStaging";
+import CommuteChangeChartStaging from "../Printing/CommuteChangeChartStaging";
 import MapComponent from "../map";
 import { useState, useEffect, useRef, useCallback, } from "react";
 import "@arcgis/map-components/components/arcgis-search";
@@ -49,6 +54,7 @@ function ReportContent() {
   const setConfigReady = useAppStateStore((state) => state.setConfigReady)
   const commuteGraphics = useAppStateStore((state) => state.commuteGraphics)
   const barChartData = useAppStateStore((state) => state.barChartData)
+  const commuteChangeChartData = useAppStateStore((state) => state.commuteChangeChartData)
   const selectedSiteName = useAppStateStore((state) => state.selectedSiteName)
   const setCommuteGraphics = useAppStateStore((state) => state.setCommuteGraphics)
   const {
@@ -83,12 +89,32 @@ function ReportContent() {
           )}
         </div>
         <div style={{width:"100%", height:"92%", display:"flex", flexDirection:"row"}}>
-          <div style={{flex: printingActive ? 1 : "1 1 50%", display:"flex", flexDirection:"column",}}>
+          <div style={{flex: printingActive ? 1 : "1 1 40%", display:"flex", flexDirection:"column",}}>
             <MapComponent />
             {(!printingActive && barChartData && configReady) && (
-              <div style={{ flex: "1 1 50%", height:"50%", display:"flex", flexDirection:"column"}}>
-                <div style={{textAlign:"center", fontWeight:"bold", fontSize:"20px"}}>Average Travel Time and Distance By Site</div>
-                <BarChartStaging chartData={barChartData} selectedSiteName={selectedSiteName}/>
+              <div style={{ flex: "1 1 60%", height:"50%", width:"100%", display:"flex", flexDirection:"column"}}>
+                <CalciteTabs scale="s">
+                  <CalciteTabNav slot="title-group" style={{marginLeft:"15px"}}>
+                    <CalciteTabTitle>Average Time & Distance</CalciteTabTitle>
+                    <CalciteTabTitle>CommuteTimeChange</CalciteTabTitle>
+                  </CalciteTabNav>
+                  <CalciteTab>
+                    <div style={{ display:"flex", flexDirection:"column", height:"100%"}}>
+                      <div style={{textAlign:"center", fontWeight:"bold", fontSize:"20px"}}>Average Travel Time and Distance By Site</div>
+                      <div style={{height:"350px"}}>
+                        <BarChartStaging chartData={barChartData} selectedSiteName={selectedSiteName}/>
+                      </div>
+                    </div>
+                  </CalciteTab>
+                  <CalciteTab>
+                    <div style={{ display:"flex", flexDirection:"column", height:"100%"}}>
+                      <div style={{textAlign:"center", fontWeight:"bold", fontSize:"20px"}}>Commute Change By Site</div>
+                      <div style={{height:"350px"}}>
+                        <CommuteChangeChartStaging chartData={commuteChangeChartData} selectedSiteName={selectedSiteName}/>
+                      </div>
+                    </div>
+                  </CalciteTab>
+                </CalciteTabs>
               </div>
             )}
           </div>
@@ -98,9 +124,9 @@ function ReportContent() {
                 <div style={{display:"flex", flexDirection:"column", height:"100%", gap:"10px"}}>
                   {baselineFeatures?.length && (
                     <>
-                      <div style={{width:"97%", marginInline:"auto", backgroundColor:"#eaeaeb", outline:"1px solid #CCCDD5", marginBottom:"4px", marginTop:"2px", borderRadius: "var(--root-border-radius)",boxShadow: "var(--optimal-shadow)",}}>
-                        <div style={{textAlign:"center", fontSize:"20px", padding:"5px"}}>Baseline Sites</div>
-                      </div>
+                      {/* <div style={{width:"97%", marginInline:"auto", backgroundColor:"#eaeaeb", outline:"1px solid #CCCDD5", marginBottom:"4px", marginTop:"2px", borderRadius: "var(--root-border-radius)",boxShadow: "var(--optimal-shadow)",}}>
+                        <div style={{textAlign:"center", fontSize:"20px", padding:"5px"}}>Employee commute By site</div>
+                      </div> */}
                       <div style={{display:"flex", flexDirection:"column", overflow:"auto", minHeight:"20%", maxheight:"100%", width:"98%"}}>
                         <BaseFeatureList />              
                       </div>

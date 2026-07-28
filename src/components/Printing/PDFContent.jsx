@@ -132,7 +132,7 @@ export default function PDFContent({
               </View>
               <View style={{display:"flex", flexDirection:"row"}}>
                 <View style={{fontSize: 13, padding: "2px", border: "1px solid #000759",textAlign:"center", width:"50%", backgroundColor:"white"}}>
-                  <Text style={{fontSize:"12px", textAlign:"center"}}>Time: {feature.AverageCommuteTime} min</Text>
+                  <Text style={{fontSize:"12px", textAlign:"center"}}>Time: {intFormatter.format(feature.AverageCommuteTime)} min</Text>
                 </View>
                 <View style={{fontSize: 13, padding: "2px", border: "1px solid #000759",textAlign:"center", width:"50%", backgroundColor:"white"}}>
                   <Text style={{fontSize:"12px", textAlign:"center"}}>Distance: {feature.AverageCommuteDist} mi</Text>

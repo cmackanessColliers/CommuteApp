@@ -34,11 +34,17 @@ function ConfigureTradeArea() {
   const setTradeAreaLayer = useAppStateStore((state) => state.setTradeAreaLayer)
   const formattedTime = new Date().toTimeString().slice(0, 5)
   const [time, setTime] = useState(formattedTime)
+  const [travelMode, setTravelMode] = useState("driving")
   const [configOpen, setConfigOpen] = useState(true)
-  // const [radii, setRadii] = useState(radiusLengths !== null ? radiusLengths : [1]);
-  // const [travelDurations, setTravelDurations] = useState(travelTimes !== null ? travelTimes : [1200]);
   const [areaType, setAreaType] = useState("isochrone")
   const [isLoading, setIsLoading] = useState(false)
+  const travelModeLookup = {
+    walking: "Walking",
+    public_transport: "Walking & Public Transport",
+    cycling: "Cycling",
+    "cycling+public_transport": "Cycling & Public Transport",
+    driving: "Driving",
+  };
   
   function handleCreateTradeAreas() {
     setIsLoading(true);
@@ -61,7 +67,7 @@ function ConfigureTradeArea() {
       getTravelTimeAreas(
         areaType,
         baselineFeatures,
-        "driving",
+        travelMode,
         travelDurations,
         radii,
         null,
@@ -244,53 +250,77 @@ function ConfigureTradeArea() {
                         </CalciteListItem>
                       )}
                       {areaType === "isochrone" && (
-                        <CalciteListItem>
-                          <CalciteLabel
-                            slot="content"
-                            scale="s"
-                            layout="block"
-                            style={{ marginTop: "3px", marginBottom: "3px" }}
-                          >
-                            Set Travel Times
-                            {travelDurations.map((duration, index) => (
-                              <div
-                                key={index}
-                                style={{
-                                  display: "flex",
-                                  gap: "8px",
-                                  marginBottom: "6px",
-                                  alignItems: "center",
-                                }}
+                        <>
+                          <CalciteListItem>
+                            <CalciteLabel slot="content" layout="block" scale="s" style={{marginTop:"3px", marginBottom:"3px"}}> Set Trade Area Type
+                              <CalciteCombobox
+                                scale="s"
+                                selectionMode="single"
+                                overlayPositioning="fixed"
+                                value={travelMode}
+                                onCalciteComboboxChange={(e)=>setTravelMode(e.target.value)}
+                                placeholder="Select Trade Area Type"
                               >
-                                <CalciteInputNumber
-                                  scale="s"
-                                  style={{width:"90%"}}
-                                  value={String(duration / 60)}
-                                  onCalciteInputNumberChange={(e) =>
-                                    updateTravelDuration(index, e.target.value)
-                                  }
-                                />
-
-                                <CalciteButton
-                                  appearance="outline"
-                                  scale="s"
-                                  color="red"
-                                  icon-start="trash"
-                                  onClick={() => removeTravelDuration(index)}
-                                  disabled={travelDurations.length === 1}
-                                >
-                                </CalciteButton>
-                              </div>
-                            ))}
-                            <CalciteButton
-                              appearance="outline"
+                                {Object.entries(travelModeLookup).map(([key, value]) => (
+                                  <CalciteComboboxItem
+                                    value={key}
+                                    key={key}
+                                    selected={key === travelMode}
+                                  >
+                                    {value}
+                                  </CalciteComboboxItem>
+                                ))}
+                              </CalciteCombobox>
+                            </CalciteLabel>
+                          </CalciteListItem>
+                          <CalciteListItem>
+                            <CalciteLabel
+                              slot="content"
                               scale="s"
-                              onClick={addTravelDuration}
+                              layout="block"
+                              style={{ marginTop: "3px", marginBottom: "3px" }}
                             >
-                              Add Travel Time
-                            </CalciteButton>
-                          </CalciteLabel>
-                        </CalciteListItem>
+                              Set Travel Times
+                              {travelDurations.map((duration, index) => (
+                                <div
+                                  key={index}
+                                  style={{
+                                    display: "flex",
+                                    gap: "8px",
+                                    marginBottom: "6px",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <CalciteInputNumber
+                                    scale="s"
+                                    style={{width:"90%"}}
+                                    value={String(duration / 60)}
+                                    onCalciteInputNumberChange={(e) =>
+                                      updateTravelDuration(index, e.target.value)
+                                    }
+                                  />
+
+                                  <CalciteButton
+                                    appearance="outline"
+                                    scale="s"
+                                    color="red"
+                                    icon-start="trash"
+                                    onClick={() => removeTravelDuration(index)}
+                                    disabled={travelDurations.length === 1}
+                                  >
+                                  </CalciteButton>
+                                </div>
+                              ))}
+                              <CalciteButton
+                                appearance="outline"
+                                scale="s"
+                                onClick={addTravelDuration}
+                              >
+                                Add Travel Time
+                              </CalciteButton>
+                            </CalciteLabel>
+                          </CalciteListItem>
+                        </>
                       )}
                       <CalciteListItem>
                         <CalciteButton slot="content" width="full"

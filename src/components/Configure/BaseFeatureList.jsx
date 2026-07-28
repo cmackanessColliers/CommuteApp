@@ -149,14 +149,14 @@ function CompFeatureList() {
                         <th style={{paddingTop:"5px", paddingBottom:"5px"}}>Avg Time</th>
                         <td style={{paddingTop:"5px", paddingBottom:"5px"}}>
                           <div style={{display:"flex", flexDirection:"column"}}>
-                            <span>{feature.AverageCommuteTime} min</span>
+                            <span>{intFormatter.format(feature.AverageCommuteTime)} min</span>
                             {feature?.CommuteTimeDifference !== null && (
                               <>
                                 {feature?.CommuteTimeDifference > 0 && (
-                                  <span style={{fontSize:"10px", color:"red"}}>+{feature.CommuteTimeDifference} min</span>
+                                  <span style={{fontSize:"10px", color:"red"}}>+{intFormatter.format(feature.CommuteTimeDifference)} min</span>
                                 )}
                                 {feature?.CommuteTimeDifference < 0 && (
-                                  <span style={{fontSize:"10px", color:"#1C54F4"}}>{(feature.CommuteTimeDifference)} min</span>
+                                  <span style={{fontSize:"10px", color:"#1C54F4"}}>{intFormatter.format(feature.CommuteTimeDifference)} min</span>
                                 )}
                               </>
                             )}

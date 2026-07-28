@@ -104,6 +104,7 @@ export async function generateCommuteAnalysis(
   let EMPLocList = [];
   let BLDLocList = [];
   const EmpCommuteGraphics = []
+  const graphicsDict = {}
   const BLDsiteLookup = {};
   const appId = import.meta.env.VITE_TRAVELTIME_APP_ID;
   const appKey = import.meta.env.VITE_TRAVELTIME_APP_KEY;
@@ -427,12 +428,63 @@ export async function generateCommuteAnalysis(
           geometry: sourceFeature.geometry,
           attributes: newAttributes,
         });
+        graphicsDict[BLD_ID] ??= {};
+        graphicsDict[BLD_ID][newAttributes?.[nameField]] = {
+          ...newAttributes,
+        };
         EmpCommuteGraphics.push(newGraphic);
       });
     });
-
-    // allIsoGraphics.push(...batchGraphics);
   }
+  if (baselineFeature) {
+
+    const baselineId = String(baselineFeature?.[0]?.attributes?.objectid);
+  
+    for (const bldId in graphicsDict) {
+      // skip baseline itself if desired
+      if (bldId === baselineId) continue;
+  
+      let shorterBy5 = 0;
+      let within5 = 0;
+      let longerBy5 = 0;
+  
+      for (const employeeName in graphicsDict[bldId]) {
+        const comparisonCommute =
+          graphicsDict[bldId][employeeName].travelTime;
+  
+        const baselineCommute =
+          graphicsDict[baselineId]?.[employeeName]?.travelTime;
+  
+        if (baselineCommute == null) continue;
+  
+        const diff = comparisonCommute - baselineCommute;
+        if (!employeeCountField) {
+          if (diff > 5) {
+            longerBy5++;
+          } else if (diff < -5) {
+            shorterBy5++;
+          } else {
+            within5++;
+          }
+        } else {
+          const weight = graphicsDict[bldId][employeeName].CommuterCount || 1;
+          if (diff > 5) {
+            longerBy5 += weight;
+          } else if (diff < -5) {
+            shorterBy5 += weight;
+          } else {
+            within5 += weight;
+          }
+        }
+      }
+  
+      allIsoGraphics[bldId]["CommuteShorterBy5"] = shorterBy5
+      allIsoGraphics[bldId]["Commutewithin5"] = within5
+      allIsoGraphics[bldId]["CommutelongerBy5"] = longerBy5
+    }
+  }
+
+  // console.log("commuteComparison", commuteComparison);
   for (const graphic in allIsoGraphics) {
     allIsoGraphics[graphic]["CommuteTimeDifference"] =
     Math.round(
