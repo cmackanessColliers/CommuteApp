@@ -40,7 +40,7 @@ function ConfigureTradeArea() {
   const [isLoading, setIsLoading] = useState(false)
   const travelModeLookup = {
     walking: "Walking",
-    public_transport: "Walking & Public Transport",
+    public_transport: "Public Transport",
     cycling: "Cycling",
     "cycling+public_transport": "Cycling & Public Transport",
     driving: "Driving",
@@ -251,14 +251,17 @@ function ConfigureTradeArea() {
                       )}
                       {areaType === "isochrone" && (
                         <>
-                          <CalciteListItem>
+                          {/* <CalciteListItem>
                             <CalciteLabel slot="content" layout="block" scale="s" style={{marginTop:"3px", marginBottom:"3px"}}> Set Trade Area Type
                               <CalciteCombobox
                                 scale="s"
                                 selectionMode="single"
                                 overlayPositioning="fixed"
                                 value={travelMode}
-                                onCalciteComboboxChange={(e)=>setTravelMode(e.target.value)}
+                                onCalciteComboboxChange={(e)=>{
+                                  console.log(e.target.value)
+                                  setTravelMode(e.target.value)
+                                }}
                                 placeholder="Select Trade Area Type"
                               >
                                 {Object.entries(travelModeLookup).map(([key, value]) => (
@@ -266,13 +269,12 @@ function ConfigureTradeArea() {
                                     value={key}
                                     key={key}
                                     selected={key === travelMode}
-                                  >
-                                    {value}
-                                  </CalciteComboboxItem>
+                                    heading={value}
+                                  ></CalciteComboboxItem>
                                 ))}
                               </CalciteCombobox>
                             </CalciteLabel>
-                          </CalciteListItem>
+                          </CalciteListItem> */}
                           <CalciteListItem>
                             <CalciteLabel
                               slot="content"
